@@ -1,0 +1,19 @@
+{
+  "$schema": "https://claude.ai/plugin-marketplace-v1.json",
+  "name": "ansible-skill",
+  "version": "0.0.0",
+  "description": "Diagnose-first Ansible and ansible-core guidance for Claude Code, with a two-axis Response Contract (idempotency and blast-radius) and a 9-category routing table.",
+  "author": {
+    "name": "sadicabubakari",
+    "email": "olandodeflexy@gmail.com"
+  },
+  "license": "Apache-2.0",
+  "repository": "https://github.com/sadicabubakari/ansible-skill",
+  "plugins": [
+    {
+      "name": "ansible-skill",
+      "version": "0.0.0",
+      "path": "skills/ansible-skill"
+    }
+  ]
+}
