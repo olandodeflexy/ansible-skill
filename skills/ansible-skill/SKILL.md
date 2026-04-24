@@ -38,3 +38,17 @@ Never recommend running a play against production without `--check --diff` first
 5. **Generate artifacts** — playbook YAML, role skeleton, `requirements.yml`, Molecule scenario, CI workflow, Vault usage.
 6. **Validate before finalizing** — run validation commands tailored to risk tier.
 7. **Emit the Response Contract** at the end.
+
+## Diagnose Before You Generate
+
+| Failure category | Symptoms | Primary references |
+|------------------|----------|--------------------|
+| **Idempotency drift** | Tasks report `changed=True` every run, `command`/`shell` without `creates`/`changed_when`, non-native modules, handlers firing spuriously | `references/idempotency-patterns.md` |
+| **Blast radius** | Missing `serial`, no `max_fail_percentage`, `any_errors_fatal` misused, no `--limit` in CI, fact-gathering against whole fleet | `references/execution-and-runtime.md`, `references/ci-cd-workflows.md` |
+| **Secret exposure** | Plaintext in vars, `no_log` missing, Vault key handling, secrets in stdout/stderr, `ansible-vault` vs external secret managers | `references/security-and-vault.md` |
+| **Variable precedence bugs** | 23-level chain surprises, `set_fact` vs `vars` vs `vars_files`, group_vars / host_vars collisions, extra-vars overrides | `references/inventory-and-variables.md` |
+| **Inventory correctness** | Static/dynamic drift, group membership bugs, `ansible_host` vs `inventory_hostname`, missing `--limit` safety | `references/inventory-and-variables.md` |
+| **Handler/ordering issues** | Handlers not firing on failure, `meta: flush_handlers`, `listen` topics, notify ordering | `references/idempotency-patterns.md` |
+| **Check-mode blind spots** | Tasks break under `--check`, `ignore_errors` / `failed_when` hiding real failures, modules that don't support check mode | `references/idempotency-patterns.md` |
+| **Collection/role supply chain** | Galaxy pinning, `requirements.yml` hygiene, version drift, private Automation Hub, signature verification | `references/collections-and-supply-chain.md` |
+| **Execution environment / runtime** | EE image pinning, `ansible-navigator` vs `ansible-playbook`, Python interpreter discovery, connection plugin, become escalation, forks/pipelining/fact caching | `references/execution-and-runtime.md` |
