@@ -57,7 +57,7 @@ Never recommend running a play against production without `--check --diff` first
 
 **Activate when:** creating or reviewing Ansible playbooks, roles, or collections; setting up or debugging Molecule / ansible-test; structuring multi-environment inventory; implementing Ansible CI/CD; choosing role patterns or collection organization; configuring Vault or external secret backends; building or pinning execution environments.
 
-**Don't use for:** basic YAML syntax Claude already knows; module API reference (point users at ansible-docs); AAP / AWX / Tower platform-specific questions (job templates, surveys, RBAC, workflows); cloud-provider SDK questions unrelated to Ansible modules.
+**Don't use for:** basic YAML syntax Claude already knows; module API reference (point users at the `ansible-doc` CLI or `docs.ansible.com`); AAP / AWX / Tower platform-specific questions (job templates, surveys, RBAC, workflows); cloud-provider SDK questions unrelated to Ansible modules.
 
 ## Core Principles
 
@@ -240,7 +240,7 @@ See `references/collections-and-supply-chain.md` for `requirements.yml` syntax, 
 **Rules:**
 
 - Pin EE images by digest (`@sha256:...`), not tag, for production.
-- Build EEs with `ansible-builder` from a `execution-environment.yml`.
+- Build EEs with `ansible-builder` from an `execution-environment.yml`.
 - `ansible-navigator run` is the preferred invocation — it handles EE lifecycle + streams output cleanly.
 
 See `references/execution-and-runtime.md` for EE build patterns, interpreter discovery, connection/become gotchas, and forks/pipelining/fact-caching.
@@ -257,7 +257,7 @@ See `references/execution-and-runtime.md` for EE build patterns, interpreter dis
 
 Keep `ansible-core` + collection upgrades in a separate PR from functional changes. The community `ansible` package is a starter bundle; production teams pin collections individually.
 
-## Modern Ansible Features (2.14+)
+## Modern Ansible Features (2.11+)
 
 | Feature | Min `ansible-core` | Common use |
 |---------|---------------------|------------|
