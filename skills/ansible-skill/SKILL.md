@@ -269,3 +269,22 @@ Keep `ansible-core` + collection upgrades in a separate PR from functional chang
 | `ansible-navigator` stable workflow | n/a (packaging) | Default for EE-based runs |
 
 Verify the runtime floor before emitting a feature. Version-specific behavior (esp. `validate` and handler inheritance) is a frequent LLM mistake.
+
+## Reference Files
+
+Progressive disclosure — essentials here, depth on demand. Reference files land in Phase 3; the routing table and in-section pointers above reference them by path.
+
+- `references/idempotency-patterns.md` — module contracts, `command`/`shell` guards, handlers, check-mode
+- `references/inventory-and-variables.md` — full 23-level precedence, dynamic inventory, `set_fact` vs vars
+- `references/security-and-vault.md` — vault-id, external secret backends, `no_log`, log hardening
+- `references/execution-and-runtime.md` — serial/max-fail, execution environments, interpreter, connection/become, performance
+- `references/testing-frameworks.md` — ansible-lint, Molecule, ansible-test, argument_specs
+- `references/ci-cd-workflows.md` — GitHub Actions, GitLab CI, blast-radius gates, secret handling in CI
+- `references/collections-and-supply-chain.md` — `requirements.yml`, fqcn, signature verification, private hubs
+- `references/quick-reference.md` — command cheatsheet, troubleshooting flowchart, module recipes, version matrix
+
+## License
+
+Apache-2.0. See LICENSE.
+
+**Copyright © 2026 sadicabubakari**
