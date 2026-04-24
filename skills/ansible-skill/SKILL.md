@@ -28,3 +28,13 @@ Every Ansible response must include:
 7. **Rollback notes** — for any destructive or state-mutating play: how to undo (inverse play, restore from backup, `state: absent`), what evidence to keep (registered var output, command logs, diff artifacts).
 
 Never recommend running a play against production without `--check --diff` first **and** an explicit `--limit` or a reviewed inventory pattern.
+
+## Workflow
+
+1. **Capture execution context** — `ansible-core` version, collections, Python interpreter, connection plugin, execution path (local/CI/EE/AWX-free), environment criticality.
+2. **Diagnose failure mode(s)** using the routing table below. If intent spans categories, load all matching references.
+3. **Load only the matching reference file(s)** — do not preload depth the task does not need.
+4. **Propose fix with risk controls** — why this addresses the mode, what could still go wrong, guardrails (lint rules / Molecule / `--check --diff` / approval gates / rollback).
+5. **Generate artifacts** — playbook YAML, role skeleton, `requirements.yml`, Molecule scenario, CI workflow, Vault usage.
+6. **Validate before finalizing** — run validation commands tailored to risk tier.
+7. **Emit the Response Contract** at the end.
