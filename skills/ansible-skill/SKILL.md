@@ -74,7 +74,7 @@ Flow: task → role → playbook → collection.
 
 ### Directory Layout
 
-```
+```text
 inventories/
   prod/      hosts, group_vars/, host_vars/
   staging/   hosts, group_vars/, host_vars/
@@ -287,4 +287,4 @@ Progressive disclosure — essentials here, depth on demand. Reference files lan
 
 Apache-2.0. See LICENSE.
 
-**Copyright © 2026 sadicabubakari**
+Copyright © 2026 sadicabubakari.
