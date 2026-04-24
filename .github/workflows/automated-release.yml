@@ -1,0 +1,66 @@
+name: Automated release
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Skip if release commit
+        id: skip
+        run: |
+          MSG=$(git log -1 --format=%B)
+          if printf '%s' "$MSG" | grep -q '\[skip ci\]'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Release commit detected — skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-python@v5
+        if: steps.skip.outputs.skip != 'true'
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        if: steps.skip.outputs.skip != 'true'
+        run: pip install pyyaml
+
+      - name: Configure git
+        if: steps.skip.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Compute next version and sync files
+        if: steps.skip.outputs.skip != 'true'
+        id: bump
+        run: python3 .github/scripts/bump-version.py
+
+      - name: Commit and tag
+        if: steps.skip.outputs.skip != 'true'
+        run: |
+          VERSION=$(cat .release-version 2>/dev/null || true)
+          if [ -z "$VERSION" ]; then
+            echo "No version produced; nothing to release."
+            exit 0
+          fi
+          rm .release-version
+          git add .claude-plugin/marketplace.json skills/ansible-skill/SKILL.md CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(release): v$VERSION [skip ci]"
+          git tag "v$VERSION"
+          git push origin master --tags
