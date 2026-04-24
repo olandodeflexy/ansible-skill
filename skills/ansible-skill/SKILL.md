@@ -244,3 +244,28 @@ See `references/collections-and-supply-chain.md` for `requirements.yml` syntax, 
 - `ansible-navigator run` is the preferred invocation — it handles EE lifecycle + streams output cleanly.
 
 See `references/execution-and-runtime.md` for EE build patterns, interpreter discovery, connection/become gotchas, and forks/pipelining/fact-caching.
+
+## Version Management
+
+| Component | Strategy | Example |
+|-----------|----------|---------|
+| `ansible-core` runtime | Pin minor for prod | `ansible-core>=2.17,<2.18` |
+| Community `ansible` package | Pin exact or avoid in prod | Prefer pinning `ansible-core` + collections separately |
+| Collections (prod) | Exact version in `requirements.yml` | `version: "5.1.2"` |
+| Collections (dev) | Allow minor | `version: ">=5.1.0,<6.0.0"` |
+| Python interpreter | Explicit `ansible_python_interpreter` | `/usr/bin/python3` (avoid auto-discovery in prod) |
+
+Keep `ansible-core` + collection upgrades in a separate PR from functional changes. The community `ansible` package is a starter bundle; production teams pin collections individually.
+
+## Modern Ansible Features (2.14+)
+
+| Feature | Min `ansible-core` | Common use |
+|---------|---------------------|------------|
+| `argument_specs` in `meta/` | 2.11+ | Role input validation |
+| `ansible.builtin.import_role` with `vars_from` | 2.14+ | Load alt var files per import |
+| `validate` parameter on `template`/`copy` | 2.15+ | Run shell validator before applying |
+| Role handler `listen` topic inheritance | 2.16+ | Cross-role handler topics |
+| Structured `changed_when` with dict returns | 2.17+ | Clean branching on module result |
+| `ansible-navigator` stable workflow | n/a (packaging) | Default for EE-based runs |
+
+Verify the runtime floor before emitting a feature. Version-specific behavior (esp. `validate` and handler inheritance) is a frequent LLM mistake.
