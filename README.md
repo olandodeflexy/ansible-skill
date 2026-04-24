@@ -18,7 +18,7 @@ Every Ansible response from Claude emits a two-axis Response Contract:
 
 ```bash
 # From Claude Code
-/plugin install github:sadicabubakari/ansible-skill
+/plugin install github:olandodeflexy/ansible-skill
 ```
 
 ## Quick start
@@ -36,7 +36,7 @@ Claude loads only the reference files relevant to your query.
 ## Covered failure categories
 
 | Category | Topic |
-|---|---|
+| --- | --- |
 | Idempotency drift | `changed=True` loops, `command`/`shell` without guards, handler misfires |
 | Blast radius | `serial`, `max_fail_percentage`, `--limit` safety, fact-gathering scope |
 | Secret exposure | Vault, `no_log`, external secret backends, log leakage |

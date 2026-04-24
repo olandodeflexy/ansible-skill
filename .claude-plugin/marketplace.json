@@ -8,7 +8,7 @@
     "email": "olandodeflexy@gmail.com"
   },
   "license": "Apache-2.0",
-  "repository": "https://github.com/sadicabubakari/ansible-skill",
+  "repository": "https://github.com/olandodeflexy/ansible-skill",
   "plugins": [
     {
       "name": "ansible-skill",
