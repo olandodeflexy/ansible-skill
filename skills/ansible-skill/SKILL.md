@@ -52,3 +52,61 @@ Never recommend running a play against production without `--check --diff` first
 | **Check-mode blind spots** | Tasks break under `--check`, `ignore_errors` / `failed_when` hiding real failures, modules that don't support check mode | `references/idempotency-patterns.md` |
 | **Collection/role supply chain** | Galaxy pinning, `requirements.yml` hygiene, version drift, private Automation Hub, signature verification | `references/collections-and-supply-chain.md` |
 | **Execution environment / runtime** | EE image pinning, `ansible-navigator` vs `ansible-playbook`, Python interpreter discovery, connection plugin, become escalation, forks/pipelining/fact caching | `references/execution-and-runtime.md` |
+
+## When to Use This Skill
+
+**Activate when:** creating or reviewing Ansible playbooks, roles, or collections; setting up or debugging Molecule / ansible-test; structuring multi-environment inventory; implementing Ansible CI/CD; choosing role patterns or collection organization; configuring Vault or external secret backends; building or pinning execution environments.
+
+**Don't use for:** basic YAML syntax Claude already knows; module API reference (point users at ansible-docs); AAP / AWX / Tower platform-specific questions (job templates, surveys, RBAC, workflows); cloud-provider SDK questions unrelated to Ansible modules.
+
+## Core Principles
+
+### Unit Hierarchy
+
+| Unit | When to Use | Scope |
+|------|-------------|-------|
+| **Task** | One action | Install a package, write a file |
+| **Role** | Reusable bundle of related tasks | Web server config, database setup |
+| **Playbook** | Orchestrates roles across hosts | Full stack deploy, one environment |
+| **Collection** | Distributable unit of roles, modules, plugins | Shared across teams, versioned, on Galaxy or Automation Hub |
+
+Flow: task → role → playbook → collection.
+
+### Directory Layout
+
+```
+inventories/
+  prod/      hosts, group_vars/, host_vars/
+  staging/   hosts, group_vars/, host_vars/
+  dev/
+roles/       # local reusable roles
+collections/ # requirements.yml, installed collections
+playbooks/   # deploy.yml, site.yml, one-off ops plays
+molecule/    # per-role scenarios
+group_vars/  # cross-inventory group vars (if shared)
+host_vars/   # cross-inventory host vars (if shared)
+```
+
+Separate **inventories** from **roles**. Keep roles single-responsibility. Prefer per-inventory `group_vars`/`host_vars` over top-level to avoid leak between environments.
+
+### Naming Conventions
+
+- Role names: short, hyphenated, purpose-based (`nginx-site`, not `my_role`)
+- Variable names: prefix with role scope to avoid global collisions (`nginx_site_port`, not `port`)
+- Task names: imperative sentence — appears in logs (`"Install nginx"`, not `"nginx"`)
+- Tags: purpose-based, not task-name-based (`tags: [config, tls]` vs `tags: [install_nginx]`)
+
+### Task Ordering (within a task block)
+
+`name` → `module` → module args → `register` → `when` → `loop` → `notify` → `tags`
+
+```yaml
+- name: Install nginx
+  ansible.builtin.package:
+    name: nginx
+    state: present
+  register: nginx_install
+  when: ansible_os_family == 'Debian'
+  notify: restart nginx
+  tags: [install]
+```
