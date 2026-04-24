@@ -43,15 +43,15 @@ Never recommend running a play against production without `--check --diff` first
 
 | Failure category | Symptoms | Primary references |
 |------------------|----------|--------------------|
-| **Idempotency drift** | Tasks report `changed=True` every run, `command`/`shell` without `creates`/`changed_when`, non-native modules, handlers firing spuriously | `references/idempotency-patterns.md` |
-| **Blast radius** | Missing `serial`, no `max_fail_percentage`, `any_errors_fatal` misused, no `--limit` in CI, fact-gathering against whole fleet | `references/execution-and-runtime.md`, `references/ci-cd-workflows.md` |
-| **Secret exposure** | Plaintext in vars, `no_log` missing, Vault key handling, secrets in stdout/stderr, `ansible-vault` vs external secret managers | `references/security-and-vault.md` |
-| **Variable precedence bugs** | 23-level chain surprises, `set_fact` vs `vars` vs `vars_files`, group_vars / host_vars collisions, extra-vars overrides | `references/inventory-and-variables.md` |
-| **Inventory correctness** | Static/dynamic drift, group membership bugs, `ansible_host` vs `inventory_hostname`, missing `--limit` safety | `references/inventory-and-variables.md` |
-| **Handler/ordering issues** | Handlers not firing on failure, `meta: flush_handlers`, `listen` topics, notify ordering | `references/idempotency-patterns.md` |
-| **Check-mode blind spots** | Tasks break under `--check`, `ignore_errors` / `failed_when` hiding real failures, modules that don't support check mode | `references/idempotency-patterns.md` |
-| **Collection/role supply chain** | Galaxy pinning, `requirements.yml` hygiene, version drift, private Automation Hub, signature verification | `references/collections-and-supply-chain.md` |
-| **Execution environment / runtime** | EE image pinning, `ansible-navigator` vs `ansible-playbook`, Python interpreter discovery, connection plugin, become escalation, forks/pipelining/fact caching | `references/execution-and-runtime.md` |
+| **Idempotency drift** | Tasks report `changed=True` every run, `command`/`shell` without `creates`/`changed_when`, non-native modules, handlers firing spuriously | [Idempotency Patterns](references/idempotency-patterns.md) |
+| **Blast radius** | Missing `serial`, no `max_fail_percentage`, `any_errors_fatal` misused, no `--limit` in CI, fact-gathering against whole fleet | [Execution & Runtime](references/execution-and-runtime.md), [CI/CD Workflows](references/ci-cd-workflows.md) |
+| **Secret exposure** | Plaintext in vars, `no_log` missing, Vault key handling, secrets in stdout/stderr, `ansible-vault` vs external secret managers | [Security & Vault](references/security-and-vault.md) |
+| **Variable precedence bugs** | 22-level chain surprises, `set_fact` vs `vars` vs `vars_files`, group_vars / host_vars collisions, extra-vars overrides | [Inventory & Variables](references/inventory-and-variables.md) |
+| **Inventory correctness** | Static/dynamic drift, group membership bugs, `ansible_host` vs `inventory_hostname`, missing `--limit` safety | [Inventory & Variables](references/inventory-and-variables.md) |
+| **Handler/ordering issues** | Handlers not firing on failure, `meta: flush_handlers`, `listen` topics, notify ordering | [Idempotency Patterns](references/idempotency-patterns.md) |
+| **Check-mode blind spots** | Tasks break under `--check`, `ignore_errors` / `failed_when` hiding real failures, modules that don't support check mode | [Idempotency Patterns](references/idempotency-patterns.md) |
+| **Collection/role supply chain** | Galaxy pinning, `requirements.yml` hygiene, version drift, private Automation Hub, signature verification | [Collections & Supply Chain](references/collections-and-supply-chain.md) |
+| **Execution environment / runtime** | EE image pinning, `ansible-navigator` vs `ansible-playbook`, Python interpreter discovery, connection plugin, become escalation, forks/pipelining/fact caching | [Execution & Runtime](references/execution-and-runtime.md) |
 
 ## When to Use This Skill
 
@@ -122,7 +122,7 @@ Separate **inventories** from **roles**. Keep roles single-responsibility. Prefe
 
 **Never:** run `ansible.builtin.shell` without `changed_when` unless the task is genuinely informational and you also set `changed_when: false`.
 
-See `references/idempotency-patterns.md` for module idempotency contracts, handler patterns, and check-mode coverage.
+See [Idempotency Patterns](references/idempotency-patterns.md) for module idempotency contracts, handler patterns, and check-mode coverage.
 
 ## Blast Radius — Quick Rule
 
@@ -136,7 +136,7 @@ See `references/idempotency-patterns.md` for module idempotency contracts, handl
 
 **Never** run against production without an explicit `--limit` or a reviewed inventory pattern. **Never** set `any_errors_fatal: true` on rolling deploys where partial completion is worse than full failure.
 
-See `references/execution-and-runtime.md` for serial/max-fail combinations and `references/ci-cd-workflows.md` for CI-level blast-radius gates.
+See [Execution & Runtime](references/execution-and-runtime.md) for serial/max-fail combinations and [CI/CD Workflows](references/ci-cd-workflows.md) for CI-level blast-radius gates.
 
 ## Variable Precedence — Quick Rule
 
@@ -158,7 +158,7 @@ Abbreviated precedence (lowest → highest):
 - `group_vars/all` silently overridden by `host_vars/<host>` — confusing when the same host appears in multiple groups
 - `--extra-vars` with `@file.yml` beats everything — a stray flag in CI can override protected config
 
-See `references/inventory-and-variables.md` for the full 23-level ladder and collision examples.
+See [Inventory & Variables](references/inventory-and-variables.md) for the full 22-level ladder and collision examples.
 
 ## Testing Strategy
 
@@ -180,7 +180,7 @@ See `references/inventory-and-variables.md` for the full 23-level ladder and col
 - Use `--check --diff` as the last gate before any production play.
 - Molecule for roles; `ansible-test` for collections. They're not interchangeable.
 
-See `references/testing-frameworks.md` for Molecule scenario structure, ansible-test usage, and argument-specs for role input validation.
+See [Testing Frameworks](references/testing-frameworks.md) for Molecule scenario structure, ansible-test usage, and argument-specs for role input validation.
 
 ## CI/CD
 
@@ -193,7 +193,7 @@ Pipeline stages: **lint → syntax-check → Molecule (or ansible-test) → stag
 - Inject vault password via OIDC or masked secret — never a file in the repo.
 - Apply the reviewed `--check` diff on approval; do not re-run planning logic inside the apply job.
 
-See `references/ci-cd-workflows.md` for GitHub Actions + GitLab CI templates and blast-radius approval gates.
+See [CI/CD Workflows](references/ci-cd-workflows.md) for GitHub Actions + GitLab CI templates and blast-radius approval gates.
 
 ## Security & Vault
 
@@ -211,7 +211,7 @@ See `references/ci-cd-workflows.md` for GitHub Actions + GitLab CI templates and
 - Prefer external secret backends (HashiCorp Vault, AWS Secrets Manager, 1Password) via lookup plugins over static vault files
 - Set `no_log: true` on any task whose module args include secrets — and remember `register` + `loop` still leak unless you also strip in the loop item
 
-See `references/security-and-vault.md` for vault-id patterns, external-backend lookups, and secrets-in-logs hardening.
+See [Security & Vault](references/security-and-vault.md) for vault-id patterns, external-backend lookups, and secrets-in-logs hardening.
 
 ## Collections & Supply Chain
 
@@ -227,7 +227,7 @@ See `references/security-and-vault.md` for vault-id patterns, external-backend l
 - Pin all collections in `requirements.yml`; do not rely on the ansible community package version for prod.
 - Mirror critical collections internally (private Automation Hub or git) for supply-chain control.
 
-See `references/collections-and-supply-chain.md` for `requirements.yml` syntax, signature verification, and private-hub auth.
+See [Collections & Supply Chain](references/collections-and-supply-chain.md) for `requirements.yml` syntax, signature verification, and private-hub auth.
 
 ## Execution Environments
 
@@ -243,7 +243,7 @@ See `references/collections-and-supply-chain.md` for `requirements.yml` syntax, 
 - Build EEs with `ansible-builder` from an `execution-environment.yml`.
 - `ansible-navigator run` is the preferred invocation — it handles EE lifecycle + streams output cleanly.
 
-See `references/execution-and-runtime.md` for EE build patterns, interpreter discovery, connection/become gotchas, and forks/pipelining/fact-caching.
+See [Execution & Runtime](references/execution-and-runtime.md) for EE build patterns, interpreter discovery, connection/become gotchas, and forks/pipelining/fact-caching.
 
 ## Version Management
 
@@ -272,16 +272,16 @@ Verify the runtime floor before emitting a feature. Version-specific behavior (e
 
 ## Reference Files
 
-Progressive disclosure — essentials here, depth on demand. Reference files land in Phase 3; the routing table and in-section pointers above reference them by path.
+Progressive disclosure — essentials here, depth on demand.
 
-- `references/idempotency-patterns.md` — module contracts, `command`/`shell` guards, handlers, check-mode
-- `references/inventory-and-variables.md` — full 23-level precedence, dynamic inventory, `set_fact` vs vars
-- `references/security-and-vault.md` — vault-id, external secret backends, `no_log`, log hardening
-- `references/execution-and-runtime.md` — serial/max-fail, execution environments, interpreter, connection/become, performance
-- `references/testing-frameworks.md` — ansible-lint, Molecule, ansible-test, argument_specs
-- `references/ci-cd-workflows.md` — GitHub Actions, GitLab CI, blast-radius gates, secret handling in CI
-- `references/collections-and-supply-chain.md` — `requirements.yml`, fqcn, signature verification, private hubs
-- `references/quick-reference.md` — command cheatsheet, troubleshooting flowchart, module recipes, version matrix
+- [Idempotency Patterns](references/idempotency-patterns.md) — module contracts, `command`/`shell` guards, handlers, check-mode
+- [Inventory & Variables](references/inventory-and-variables.md) — full 22-level precedence, dynamic inventory, `set_fact` vs vars
+- [Security & Vault](references/security-and-vault.md) — vault-id, external secret backends, `no_log`, log hardening
+- [Execution & Runtime](references/execution-and-runtime.md) — serial/max-fail, execution environments, interpreter, connection/become, performance
+- [Testing Frameworks](references/testing-frameworks.md) — ansible-lint, Molecule, ansible-test, argument_specs
+- [CI/CD Workflows](references/ci-cd-workflows.md) — GitHub Actions, GitLab CI, blast-radius gates, secret handling in CI
+- [Collections & Supply Chain](references/collections-and-supply-chain.md) — `requirements.yml`, fqcn, signature verification, private hubs
+- [Quick Reference](references/quick-reference.md) — command cheatsheet, troubleshooting flowchart, module recipes, version matrix
 
 ## License
 
