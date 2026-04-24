@@ -13,4 +13,18 @@ metadata:
 
 # Ansible Skill for Claude
 
-Under construction. Full SKILL.md content lands in Phase 2.
+Diagnose-first guidance for Ansible and ansible-core. Core file is a workflow; depth lives in reference files loaded on demand.
+
+## Response Contract
+
+Every Ansible response must include:
+
+1. **Assumptions & version floor** — `ansible-core` version, collections in `requirements.yml` with versions, Python interpreter target (`ansible_python_interpreter`), connection plugin (ssh/winrm/local), control node vs execution-environment runtime. State explicitly when the user did not provide them.
+2. **Idempotency evidence** — for each task introduced or modified: why `changed=True` only when the world actually changed. Name the module's idempotency contract (native module idempotent; `command`/`shell` requires `creates`/`removes`/`changed_when`).
+3. **Blast-radius controls** — inventory target (hosts/groups/limit), `serial` / `max_fail_percentage` / `any_errors_fatal` decision, `--check` + `--diff` coverage, whether this is safe to run against prod as-is.
+4. **Risk category addressed** — one or more of the 9 diagnose-table categories below.
+5. **Chosen remediation & tradeoffs** — what was chosen, what was traded off, why.
+6. **Validation plan** — exact commands tailored to runtime and risk tier: `ansible-lint`, `ansible-playbook --syntax-check`, `--check --diff`, Molecule scenario, `ansible-test sanity/units/integration`.
+7. **Rollback notes** — for any destructive or state-mutating play: how to undo (inverse play, restore from backup, `state: absent`), what evidence to keep (registered var output, command logs, diff artifacts).
+
+Never recommend running a play against production without `--check --diff` first **and** an explicit `--limit` or a reviewed inventory pattern.
