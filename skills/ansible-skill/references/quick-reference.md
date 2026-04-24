@@ -88,7 +88,7 @@ When a play fails, walk this tree top-down.
 | Call a REST API | `ansible.builtin.uri` | `uri: url=https://api/... method=GET return_content=yes` |
 | Manage a git repo on the target | `ansible.builtin.git` | `git: repo=... dest=/srv/app version=v1.2.3` |
 | Manage a Docker container | `community.docker.docker_container` | `docker_container: name=app image=app:1.2.3 state=started` |
-| Apply a Kubernetes manifest | `kubernetes.core.k8s` | `k8s: state=present definition='{{ lookup("file","deploy.yml") | from_yaml }}'` |
+| Apply a Kubernetes manifest | `kubernetes.core.k8s` | `k8s: state=present definition='{{ lookup("file","deploy.yml") \| from_yaml }}'` |
 | Configure a PostgreSQL user | `community.postgresql.postgresql_user` | `postgresql_user: name=app password='{{ db_password }}' no_log=true` |
 | Create an S3 object | `amazon.aws.s3_object` | `s3_object: bucket=my-bucket object=key src=/tmp/file mode=put` |
 

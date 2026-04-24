@@ -25,7 +25,7 @@ Rules:
 | Rule category | Key rules | Fails if |
 |---------------|-----------|----------|
 | Structure | `fqcn`, `name[play]`, `name[casing]` | Using `copy:` instead of `ansible.builtin.copy`, missing play/task names |
-| Safety | `no-changed-when`, `risky-shell-pipe`, `no-free-form` | `command:` without `changed_when`, shell with `|` without `pipefail` |
+| Safety | `no-changed-when`, `risky-shell-pipe`, `no-free-form` | `command:` without `changed_when`, shell with `\|` without `pipefail` |
 | Variables | `var-naming`, `jinja` | Role vars missing role-name prefix, malformed Jinja2 expressions |
 | YAML | `yaml[*]` | Indent, trailing spaces, document-start |
 | Secrets | `no-log-password`, `risky-file-permissions` | `password:` arg without `no_log: true`, 0777 chmods |
