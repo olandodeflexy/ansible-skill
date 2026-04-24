@@ -159,3 +159,38 @@ Abbreviated precedence (lowest → highest):
 - `--extra-vars` with `@file.yml` beats everything — a stray flag in CI can override protected config
 
 See `references/inventory-and-variables.md` for the full 23-level ladder and collision examples.
+
+## Testing Strategy
+
+### Decision Matrix
+
+| Situation | Approach | Tools | Cost |
+|-----------|----------|-------|------|
+| Syntax check | Static | `ansible-playbook --syntax-check`, `ansible-lint` | Free |
+| Role unit test | Scenario-based | Molecule + docker/podman driver | Free–Low |
+| Collection unit test | Module/plugin tests | `ansible-test units` | Free |
+| Collection sanity | Import + schema | `ansible-test sanity` | Free |
+| Integration — role | Molecule against real target | Molecule + delegated/vagrant driver | Med |
+| Integration — collection | Live-run modules | `ansible-test integration` | Med |
+| End-to-end, multi-host | Staged apply | `--check --diff` against staging | High |
+
+**Rules:**
+
+- Never skip `ansible-lint` — it catches fqcn, `no_log`, `changed_when` misuse at PR time.
+- Use `--check --diff` as the last gate before any production play.
+- Molecule for roles; `ansible-test` for collections. They're not interchangeable.
+
+See `references/testing-frameworks.md` for Molecule scenario structure, ansible-test usage, and argument-specs for role input validation.
+
+## CI/CD
+
+Pipeline stages: **lint → syntax-check → Molecule (or ansible-test) → staged `--check --diff` → gated apply**.
+
+**Rules:**
+
+- Pin `ansible-core` version in CI (`ansible-core>=2.17,<2.18`).
+- Pin collections in `requirements.yml` with exact versions for prod branches.
+- Inject vault password via OIDC or masked secret — never a file in the repo.
+- Apply the reviewed `--check` diff on approval; do not re-run planning logic inside the apply job.
+
+See `references/ci-cd-workflows.md` for GitHub Actions + GitLab CI templates and blast-radius approval gates.
