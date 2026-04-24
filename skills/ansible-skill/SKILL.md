@@ -110,3 +110,52 @@ Separate **inventories** from **roles**. Keep roles single-responsibility. Prefe
   notify: restart nginx
   tags: [install]
 ```
+
+## Idempotency — Quick Rule
+
+| Situation | Use | Why |
+|-----------|-----|-----|
+| Native module available | `ansible.builtin.<module>` / fqcn module | Idempotent by contract |
+| Must shell out, stateful output file | `ansible.builtin.command` with `creates:` / `removes:` | `changed=True` only if file missing |
+| Must shell out, no clear file marker | `ansible.builtin.command` with `changed_when:` based on stdout/rc | Explicit change detection |
+| Must shell out, needs shell features (pipes, redirects) | `ansible.builtin.shell` + `changed_when` | Last resort — harder to make safe |
+
+**Never:** run `ansible.builtin.shell` without `changed_when` unless the task is genuinely informational and you also set `changed_when: false`.
+
+See `references/idempotency-patterns.md` for module idempotency contracts, handler patterns, and check-mode coverage.
+
+## Blast Radius — Quick Rule
+
+| Target fleet size | Pattern | Play config |
+|-------------------|---------|-------------|
+| 1–5 hosts | Serial small batches | `serial: 1` or `serial: [1, 2]` |
+| 10–50 hosts, canary first | Canary + rolling | `serial: [1, "25%"]` with `max_fail_percentage: 10` |
+| 50+ hosts | Rolling with fail cap | `serial: "10%"`, `max_fail_percentage: 5` |
+| Critical state-change on many hosts | Fail fast | `any_errors_fatal: true` |
+| Independent tasks, no cascade | Free strategy | `strategy: free` (hosts run independently) |
+
+**Never** run against production without an explicit `--limit` or a reviewed inventory pattern. **Never** set `any_errors_fatal: true` on rolling deploys where partial completion is worse than full failure.
+
+See `references/execution-and-runtime.md` for serial/max-fail combinations and `references/ci-cd-workflows.md` for CI-level blast-radius gates.
+
+## Variable Precedence — Quick Rule
+
+Abbreviated precedence (lowest → highest):
+
+1. Role defaults (`roles/<role>/defaults/main.yml`)
+2. Inventory `group_vars/all`
+3. Inventory `group_vars/<group>`
+4. Inventory `host_vars/<host>`
+5. Play vars
+6. Block vars
+7. Task vars
+8. `set_fact`
+9. `--extra-vars` (always wins)
+
+**Most common bugs:**
+
+- `set_fact` values persist across plays in the same run — unexpected when debugging
+- `group_vars/all` silently overridden by `host_vars/<host>` — confusing when the same host appears in multiple groups
+- `--extra-vars` with `@file.yml` beats everything — a stray flag in CI can override protected config
+
+See `references/inventory-and-variables.md` for the full 23-level ladder and collision examples.
