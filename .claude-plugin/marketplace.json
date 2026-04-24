@@ -3,7 +3,7 @@
   "owner": {
     "name": "sadicabubakari"
   },
-  "version": "0.0.2",
+  "version": "0.0.3",
   "metadata": {
     "description": "Use when writing, reviewing, or debugging Ansible playbooks, roles, collections, inventory, Vault, Molecule, execution environments, or CI \u2014 diagnoses failure mode (idempotency drift, blast radius, secret exposure, variable precedence, inventory correctness, handler ordering, check-mode blind spots, collection supply chain, execution environment) with two-axis risk framing.",
     "repository": "https://github.com/olandodeflexy/ansible-skill",
@@ -27,7 +27,7 @@
         "execution-environments",
         "ci-cd"
       ],
-      "version": "0.0.2"
+      "version": "0.0.3"
     }
   ]
 }

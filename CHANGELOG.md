@@ -9,3 +9,7 @@ See commit log for details.
 ## v0.0.2
 
 See commit log for details.
+
+## v0.0.3
+
+See commit log for details.
