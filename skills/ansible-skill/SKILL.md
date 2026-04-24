@@ -194,3 +194,53 @@ Pipeline stages: **lint → syntax-check → Molecule (or ansible-test) → stag
 - Apply the reviewed `--check` diff on approval; do not re-run planning logic inside the apply job.
 
 See `references/ci-cd-workflows.md` for GitHub Actions + GitLab CI templates and blast-radius approval gates.
+
+## Security & Vault
+
+**Don't:**
+
+- Store secrets in plaintext vars or unencrypted `vars_files`
+- Omit `no_log: true` on tasks that pass secrets as module args
+- Commit vault password files — use OIDC, system keyring, or external key providers
+- Use `--verbose` in CI on tasks handling secrets (output leaks to logs)
+
+**Do:**
+
+- Use `ansible-vault encrypt_string` for inline single-value secrets
+- Use Vault-id strategy to support per-environment keys
+- Prefer external secret backends (HashiCorp Vault, AWS Secrets Manager, 1Password) via lookup plugins over static vault files
+- Set `no_log: true` on any task whose module args include secrets — and remember `register` + `loop` still leak unless you also strip in the loop item
+
+See `references/security-and-vault.md` for vault-id patterns, external-backend lookups, and secrets-in-logs hardening.
+
+## Collections & Supply Chain
+
+| Pin strategy | Prod | Dev |
+|--------------|------|-----|
+| `requirements.yml` collection version | Exact (`version: "5.1.2"`) | Range (`version: ">=5.1.0,<6.0.0"`) |
+| Galaxy vs Automation Hub | Automation Hub for certified | Galaxy OK for experimental |
+| Signature verification | Required | Optional for dev |
+
+**Rules:**
+
+- Use fully-qualified collection names (`ansible.builtin.copy`, not `copy`) — ansible-lint `fqcn` rule enforces.
+- Pin all collections in `requirements.yml`; do not rely on the ansible community package version for prod.
+- Mirror critical collections internally (private Automation Hub or git) for supply-chain control.
+
+See `references/collections-and-supply-chain.md` for `requirements.yml` syntax, signature verification, and private-hub auth.
+
+## Execution Environments
+
+| Situation | Use | Why |
+|-----------|-----|-----|
+| Local dev, fast iteration | Bare `ansible-playbook` + venv | No image build overhead |
+| CI reproducibility | EE image with `ansible-navigator` | Pinned ansible-core + collections + deps |
+| Production run | EE image, pulled by digest | Deterministic runs, rollback by image tag |
+
+**Rules:**
+
+- Pin EE images by digest (`@sha256:...`), not tag, for production.
+- Build EEs with `ansible-builder` from a `execution-environment.yml`.
+- `ansible-navigator run` is the preferred invocation — it handles EE lifecycle + streams output cleanly.
+
+See `references/execution-and-runtime.md` for EE build patterns, interpreter discovery, connection/become gotchas, and forks/pipelining/fact-caching.
