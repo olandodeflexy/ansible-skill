@@ -80,10 +80,18 @@ Rules:
 | GCP Secret Manager | `google.cloud.secret_manager` | `google.cloud` | Service account JSON / workload identity |
 
 ```yaml
-# HashiCorp Vault
-db_password: "{{ lookup('community.hashi_vault.vault_read',
-                        'secret/data/prod/db',
-                        auth_method='token') | community.hashi_vault.from_vault }}"
+# HashiCorp Vault (KV v2) — use the dedicated kv2 lookup so the return
+# is already the inner `data` mapping. `vault_read` returns the raw API
+# envelope and would require indexing with `.data.data`.
+db_password: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                        'prod/db',
+                        engine_mount_point='secret',
+                        auth_method='token').secret.password }}"
+
+# Equivalent with the lower-level vault_read lookup:
+# db_password: "{{ (lookup('community.hashi_vault.vault_read',
+#                          'secret/data/prod/db',
+#                          auth_method='token')).data.data.password }}"
 
 # AWS Secrets Manager
 api_key: "{{ lookup('amazon.aws.secretsmanager_secret',

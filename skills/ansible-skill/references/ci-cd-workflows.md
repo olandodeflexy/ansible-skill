@@ -10,13 +10,15 @@ Detail for the `CI/CD` section in SKILL.md and the `Blast radius` routing-table 
 | 2. Syntax check | `ansible-playbook --syntax-check site.yml` | Parse or module-name error |
 | 3. Unit / scenario tests | Molecule (roles) or `ansible-test units/sanity` (collections) | Any failure on any matrix leg |
 | 4. Staged `--check --diff` | `ansible-playbook --check --diff --limit=staging` | Any unexpected diff; artifact uploaded for review |
-| 5. Manual approval | GitHub / GitLab environment gate | Reviewer rejects the staged diff |
-| 6. Apply | Re-runs the *same reviewed plan* — does **not** re-plan | Any task fails at apply |
+| 5. Manual approval | GitHub / GitLab environment gate | Reviewer rejects the staged `--check --diff` output |
+| 6. Apply | Checks out the **same commit + inventory** approved in stage 5, optionally re-runs `--check --diff` against live state to detect drift since approval, then runs `ansible-playbook` (without `--check`) | Any task fails at apply, or the pre-apply drift check diverges from the approved diff |
+
+**Important:** unlike Terraform's `plan`/`apply`, Ansible has no reusable plan artifact. `--check --diff` output is **review evidence**, not an executable plan. The apply stage must re-evaluate current state against the playbook; the controls below keep staging approval meaningful despite that.
 
 Rules:
 
 - ❌ Skip lint on `main`-branch-only CI → ✅ Run on every PR; lint catches regressions before review time is spent.
-- ❌ Let stage 6 re-plan instead of applying the reviewed diff → ✅ Store the `--check --diff` artifact from stage 4 and use it as the source of truth; re-planning means the human approved one diff and a different one ran.
+- ❌ Treat the stage-4 `--check --diff` output as a reusable "plan" that stage 6 can replay → ✅ Pin the reviewed commit SHA + inventory revision, and optionally re-run `--check --diff` as the first step of stage 6 and compare its hash/content to the approved artifact; diverge → abort.
 - ❌ Conflate staging and prod into one pipeline → ✅ Separate environments, separate approval gates.
 - ❌ Auto-approve prod on successful staging → ✅ Human review the staging diff before any prod stage.
 
@@ -43,7 +45,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install ansible-core==2.17.5 ansible-lint==24.7.0 yamllint==1.35.1
-      - run: ansible-galaxy collection install -r requirements.yml
+      - run: ansible-galaxy collection install -r requirements.yml --collections-path ./collections
+      - run: echo "ANSIBLE_COLLECTIONS_PATH=./collections" >> $GITHUB_ENV
       - run: ansible-lint
       - run: yamllint .
 
@@ -75,7 +78,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install ansible-core==2.17.5
-      - run: ansible-galaxy collection install -r requirements.yml
+      - run: ansible-galaxy collection install -r requirements.yml --collections-path ./collections
+      - run: echo "ANSIBLE_COLLECTIONS_PATH=./collections" >> $GITHUB_ENV
       - name: Run --check --diff against staging
         env:
           ANSIBLE_VAULT_PASSWORD_FILE: /tmp/vp
@@ -148,9 +152,10 @@ staging-check:
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
   script:
     - echo "$VAULT_PASSWORD_STAGING" > /tmp/vp
-    - ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
-      ansible-playbook -i inventories/staging playbooks/site.yml
-      --check --diff --limit staging | tee staging-diff.txt
+    - export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
+    - export ANSIBLE_COLLECTIONS_PATH=./collections
+    - ansible-galaxy collection install -r requirements.yml --collections-path ./collections
+    - ansible-playbook -i inventories/staging playbooks/site.yml --check --diff --limit staging | tee staging-diff.txt
   artifacts:
     paths: [staging-diff.txt]
     expire_in: 30 days
@@ -166,8 +171,10 @@ apply-prod:
     - if: $CI_COMMIT_BRANCH == "main"
   script:
     - echo "$VAULT_PASSWORD_PROD" > /tmp/vp
-    - ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
-      ansible-playbook -i inventories/prod playbooks/site.yml --limit prod
+    - export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
+    - export ANSIBLE_COLLECTIONS_PATH=./collections
+    - ansible-galaxy collection install -r requirements.yml --collections-path ./collections
+    - ansible-playbook -i inventories/prod playbooks/site.yml --limit prod
 ```
 
 Rules:
@@ -183,7 +190,8 @@ Controls that make a production play safer — enforce in CI, not just conventio
 |------|-------------|-----------------|
 | `--limit` required | Linter step `grep -q -- '--limit' ci/playbook-wrappers/*.sh` | Unbounded play against whole inventory |
 | `serial:` mandatory for `hosts: all` | YAML check in CI | Whole-fleet synchronous rollout |
-| Approved-diff hash matches apply | Store diff SHA in staging-check, compare at apply | Plan drift between approval and apply |
+| Pre-apply drift check | At stage 6, re-run `--check --diff` against live state and fail if the new diff diverges from the approved stage-4 artifact (compare by hash or content) | Infrastructure changes that landed between staging approval and apply |
+| Pinned commit + inventory at apply | Apply job checks out the exact commit SHA approved in stage 5; inventory plugin snapshots pinned | Prevents apply from picking up later main-branch commits or inventory mutations |
 | Fleet size threshold | If `--list-hosts` output > N, require extra reviewer | Catches mis-scoped limits |
 | `check_mode: no` audit | Grep codebase for `check_mode: no`; block PR if added without justification comment | Silent mutations on dry-run |
 
@@ -205,7 +213,7 @@ Rules:
 
 - ❌ Rely on "the reviewer will check" for `--limit` → ✅ Automate; reviewers drift, CI doesn't.
 - ❌ Allow `check_mode: no` without a justification comment → ✅ PR comment required: why this task bypasses dry-run.
-- ❌ Compare apply-time plan to the approved diff only by visual inspection → ✅ Compute a hash of the diff and compare programmatically.
+- ❌ Assume the apply run will reproduce the stage-4 `--check --diff` exactly → ✅ Re-run `--check --diff` at the start of the apply job against live state, compare hash/content to the approved stage-4 artifact; diverge → abort and request re-review.
 
 ## Secret Handling in CI
 
@@ -233,4 +241,4 @@ Rules:
 - ❌ Combine lint + tests in one job → ✅ Fail fast; lint is seconds, Molecule is minutes.
 - ❌ Allow prod apply without a protected environment → ✅ `environment:` + required reviewers.
 - ❌ Skip artifact upload of the staged diff → ✅ Required evidence for the reviewer.
-- ❌ Re-plan at apply time → ✅ Apply the approved diff; drift detection lives elsewhere.
+- ❌ Promise that Ansible can replay a stored `--check --diff` like Terraform's plan artifact → ✅ Pin the approved commit + inventory, re-run `--check --diff` at the start of apply against live state, compare to the approved artifact before proceeding.

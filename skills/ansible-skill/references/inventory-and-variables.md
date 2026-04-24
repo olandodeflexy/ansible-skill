@@ -8,7 +8,7 @@ Canonical Ansible precedence order (lowest → highest). 22 levels per the offic
 
 | Level | Source | Example path / syntax | Common collision |
 |-------|--------|----------------------|------------------|
-| 1 | Command line values (not `-e`) | `-u myuser`, `-b`, `-K` | Forgetting `--become-user` overrides `become_user:` |
+| 1 | Command line connection/become flags | `-u myuser` → `ansible_user`; `-b`/`-K` → `ansible_become`/prompt | Sets connection/become magic vars only (not arbitrary variables). For variables, use `-e` at level 22 |
 | 2 | Role defaults | `roles/<role>/defaults/main.yml` | Role author's default silently lost the moment anyone sets a group_var |
 | 3 | Inventory file / script group vars (inline) | `[web:vars]` section in `hosts.ini` | Beaten by every file-based group_vars entry |
 | 4 | Inventory `group_vars/all` | `inventories/prod/group_vars/all.yml` | Assumed "global" but overridden by any narrower group |
@@ -18,7 +18,7 @@ Canonical Ansible precedence order (lowest → highest). 22 levels per the offic
 | 8 | Inventory file / script host vars (inline) | `web01 ansible_host=1.2.3.4 myvar=x` | Beaten by every file-based host_vars entry |
 | 9 | Inventory `host_vars/<host>` | `inventories/prod/host_vars/web01.yml` | Always beats group_vars for that host |
 | 10 | Playbook `host_vars/<host>` | Repo-root `host_vars/web01.yml` | Silent override of inventory host_vars |
-| 11 | Host facts / cached `set_fact` (with `cacheable: true`) | `ansible_facts.*`, facts cache | Stale cache returns yesterday's value |
+| 11 | Host facts (auto-gathered) + fact-cached `set_fact` from **prior** runs | `ansible_facts.*`, values cached to disk/redis | Stale cache returns yesterday's value. Note: runtime `set_fact` in **this** run is level 19, not here |
 | 12 | Play `vars` | `vars:` block on a play | Scoped to the play only, forgotten cross-play |
 | 13 | Play `vars_prompt` | Interactive prompts | CI can't answer — task hangs |
 | 14 | Play `vars_files` | `vars_files: [secrets.yml]` | Merge order is list-order, last file wins |
@@ -26,7 +26,7 @@ Canonical Ansible precedence order (lowest → highest). 22 levels per the offic
 | 16 | Block vars | `vars:` on a `block:` | Only visible inside that block |
 | 17 | Task vars | `vars:` on a single task | Highest lexical scope, still beaten by extra-vars |
 | 18 | `include_vars` | `ansible.builtin.include_vars: secrets.yml` | Runs at task time, not play start — timing surprises |
-| 19 | `set_fact` / registered vars | `register: out` / `set_fact: k=v` | Persists across plays in same run (unless `cacheable: false`) |
+| 19 | Runtime `set_fact` / registered vars (this run) | `register: out` / `set_fact: k=v` | Persists across every later play **in this playbook run** regardless of `cacheable`. `cacheable: true` additionally writes the value to the fact cache so it becomes a level-11 fact in future runs |
 | 20 | Role params (include_role) | `include_role: name=foo vars={k: v}` | Inline role call, overrides role defaults + vars |
 | 21 | Include params | `include_tasks: foo.yml vars={k: v}` | Wins over most things except extra-vars |
 | 22 | `--extra-vars` / `-e` | `-e @secrets.yml`, `-e k=v` | **Always wins** — a stray CI flag silently overrides protected config |
@@ -102,14 +102,14 @@ Rules:
 
 ## set_fact vs vars
 
-| Goal | Use | Persistence scope | Cacheable? |
-|------|-----|-------------------|------------|
+| Goal | Use | Persistence scope | `cacheable:` needed? |
+|------|-----|-------------------|---------------------|
 | One-shot per play | Play/task `vars` | That play only | n/a |
 | Value derived from module output | `register:` | Task run lifetime | n/a |
-| Cross-play persistence in same run | `set_fact:` | Rest of the run | Yes — `cacheable: true` + fact cache |
-| Cross-run persistence | Fact cache (`cacheable: true`) | Until cache expires | Yes, mandatory |
+| Cross-play persistence **in same playbook run** | `set_fact:` | Rest of the run | **No** — plain `set_fact` already persists across later plays in the same run |
+| Cross-run persistence (survive `ansible-playbook` exit) | `set_fact:` + `cacheable: true` + a fact-caching plugin | Until cache expires | Yes, mandatory; configure `fact_caching` in `ansible.cfg` |
 | Loop item transformation | Task-level `vars:` with `lookup` / filter | That task only | n/a |
-| Computed constant used many times | `set_fact` early in play | Rest of run | Optional |
+| Computed constant used many times | `set_fact` early in play | Rest of run | No |
 
 ```yaml
 - name: Fetch version once, reuse across tasks

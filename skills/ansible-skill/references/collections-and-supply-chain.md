@@ -74,7 +74,8 @@ Fully-qualified collection names prevent clashes when two collections ship modul
 The ansible-lint rule `fqcn` enforces this. Grandfathered exceptions:
 
 - `ansible.builtin.*` is the correct FQCN for built-in modules. `ansible.legacy.*` is a backwards-compatibility namespace that lets short names resolve to built-ins; don't rely on it in new code.
-- Action plugins (`import_tasks`, `include_tasks`, `block`) don't need FQCNs — they're Ansible language constructs, not modules.
+- `block:` is a genuine language construct and does not need (or accept) an FQCN.
+- `import_tasks`, `include_tasks`, `import_role`, `include_role`, `include_vars`, `import_playbook`, `meta`, `debug`, etc. **are** built-in modules — the ansible-lint `fqcn` rule flags their short forms. Write them as `ansible.builtin.import_tasks`, `ansible.builtin.include_role`, and so on.
 
 Rules:
 
@@ -120,7 +121,7 @@ Rules:
 
 Typical setup: mirror public collections + host internal ones.
 
-```yaml
+```ini
 # ansible.cfg
 [galaxy]
 server_list = internal_hub, galaxy

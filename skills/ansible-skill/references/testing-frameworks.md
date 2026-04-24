@@ -45,12 +45,24 @@ warn_list:
 ```
 
 ```yaml
-# Task that lint will flag without `changed_when`
-- name: Restart worker if marker present
+# Idempotent one-shot: `creates:` skips the task once the marker exists.
+# Do NOT add `changed_when: false` here — the first run genuinely changes
+# state (creates the marker + performs the restart), and suppressing that
+# hides handler notifications and audit evidence.
+- name: Restart worker once, then skip on subsequent runs
   ansible.builtin.command: /usr/local/bin/worker-restart.sh
   args:
     creates: /var/run/worker.restarted
-  changed_when: false        # marker-guard makes this informational after first run
+```
+
+```yaml
+# Informational status probe (never mutates state).
+# Here `changed_when: false` is correct because the task is read-only.
+- name: Probe worker status
+  ansible.builtin.command: systemctl is-active worker
+  register: worker_status
+  changed_when: false
+  failed_when: false
 ```
 
 Rules:
@@ -86,7 +98,7 @@ provisioner:
   name: ansible
   config_options:
     defaults:
-      callback_enabled: profile_tasks
+      callbacks_enabled: profile_tasks    # plural; `callback_whitelist` is the deprecated older name
 verifier:
   name: ansible
 ```

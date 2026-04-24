@@ -16,7 +16,7 @@ Detail for the `Idempotency drift`, `Handler/ordering`, and `Check-mode blind sp
 | `ansible.builtin.service` / `systemd` | Yes | Running state + enabled state already match | `state: restarted` always reports `changed=True` |
 | `ansible.builtin.cron` | Yes | Matches on `name:` in crontab comment | Changing only `minute:` without `name:` creates a duplicate |
 | `ansible.builtin.user` / `group` | Yes | Attribute diff against `/etc/passwd`/`/etc/group` | `password:` always re-hashes unless `update_password: on_create` |
-| `ansible.builtin.mount` | Yes | fstab entry + mount state both match | `state: remounted` not idempotent; use `mounted` |
+| `ansible.posix.mount` | Yes | fstab entry + mount state both match | `state: remounted` not idempotent; use `mounted`. Lives in the `ansible.posix` collection, not `ansible.builtin` |
 | `ansible.builtin.uri` | Partial | Only if server is idempotent for the method | `POST` to a non-idempotent endpoint loops forever on retry |
 | `ansible.builtin.command` | **No** | None — always runs unless guarded | Requires `creates:` / `removes:` / `changed_when:` |
 | `ansible.builtin.shell` | **No** | None — always runs unless guarded | Same as `command`, plus shell interpolation risks |
@@ -94,8 +94,8 @@ Rules:
 | File-manipulation (`copy`, `template`, `file`, `lineinfile`) | Yes | None |
 | Package (`package`, `dnf`, `apt`, `yum`) | Yes | None |
 | Service (`service`, `systemd`) | Yes | None — but `state: restarted` always reports would-change |
-| `command` / `shell` | **No by default** | Set `check_mode: no` for read-only probes; set `check_mode: yes` + `changed_when: false` for informational |
-| Custom modules | Depends on module | Declare `supports_check_mode` in argument_spec; otherwise skipped silently |
+| `command` / `shell` | **No by default** | For read-only probes: `check_mode: no` + `changed_when: false`. For mutating commands: gate with `when: not ansible_check_mode`. **Never** force `check_mode: yes` on a `command`/`shell` — it makes the task check-mode in *real* runs too, silently skipping execution and leaving `register` output undefined |
+| Custom modules | Depends on module | Support is implemented in the module code itself — pass `supports_check_mode=True` to `AnsibleModule(...)` in the module's Python source. (Role `meta/argument_specs.yml` is unrelated — that validates role inputs, not module check-mode behavior.) Otherwise the task is skipped silently under `--check` |
 | API / `uri` to external | Depends on endpoint | Wrap in `when: not ansible_check_mode` for mutating calls |
 
 Rules:

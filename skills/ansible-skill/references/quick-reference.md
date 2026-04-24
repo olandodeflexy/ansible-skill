@@ -73,24 +73,24 @@ When a play fails, walk this tree top-down.
 
 | Goal | Preferred module | Minimal example |
 |------|------------------|-----------------|
-| Install package (any distro) | `ansible.builtin.package` | `package: name=nginx state=present` |
-| Start/enable a systemd unit | `ansible.builtin.systemd` | `systemd: name=nginx state=started enabled=true` |
-| Copy a file (with backup) | `ansible.builtin.copy` | `copy: src=nginx.conf dest=/etc/nginx/nginx.conf backup=yes` |
-| Render a template | `ansible.builtin.template` | `template: src=app.conf.j2 dest=/etc/app.conf mode=0640` |
-| Create/write a small file | `ansible.builtin.file` + `ansible.builtin.copy` | `file: path=/opt/app state=directory mode=0755` then `copy: content='...' dest=/opt/app/version` |
-| Install or update Python deps | `ansible.builtin.pip` | `pip: requirements=/opt/app/requirements.txt virtualenv=/opt/app/venv` |
-| Add/remove a cron job | `ansible.builtin.cron` | `cron: name='rotate logs' minute=0 hour=3 job='/usr/bin/logrotate -f'` |
-| Create a local user | `ansible.builtin.user` | `user: name=app state=present shell=/bin/bash` |
-| Open a firewall port (firewalld) | `ansible.posix.firewalld` | `firewalld: port=443/tcp permanent=yes state=enabled` |
-| Open a firewall port (UFW) | `community.general.ufw` | `ufw: rule=allow port=443 proto=tcp` |
-| Mount a filesystem | `ansible.posix.mount` | `mount: path=/data src=/dev/sdb1 fstype=ext4 state=mounted` |
-| Download a file with checksum | `ansible.builtin.get_url` | `get_url: url=https://... dest=/tmp/... checksum=sha256:...` |
-| Call a REST API | `ansible.builtin.uri` | `uri: url=https://api/... method=GET return_content=yes` |
-| Manage a git repo on the target | `ansible.builtin.git` | `git: repo=... dest=/srv/app version=v1.2.3` |
-| Manage a Docker container | `community.docker.docker_container` | `docker_container: name=app image=app:1.2.3 state=started` |
-| Apply a Kubernetes manifest | `kubernetes.core.k8s` | `k8s: state=present definition='{{ lookup("file","deploy.yml") \| from_yaml }}'` |
-| Configure a PostgreSQL user | `community.postgresql.postgresql_user` | `postgresql_user: name=app password='{{ db_password }}' no_log=true` |
-| Create an S3 object | `amazon.aws.s3_object` | `s3_object: bucket=my-bucket object=key src=/tmp/file mode=put` |
+| Install package (any distro) | `ansible.builtin.package` | `ansible.builtin.package: name=nginx state=present` |
+| Start/enable a systemd unit | `ansible.builtin.systemd` | `ansible.builtin.systemd: name=nginx state=started enabled=true` |
+| Copy a file (with backup) | `ansible.builtin.copy` | `ansible.builtin.copy: src=nginx.conf dest=/etc/nginx/nginx.conf backup=yes` |
+| Render a template | `ansible.builtin.template` | `ansible.builtin.template: src=app.conf.j2 dest=/etc/app.conf mode=0640` |
+| Create/write a small file | `ansible.builtin.file` + `ansible.builtin.copy` | `ansible.builtin.file: path=/opt/app state=directory mode=0755` then `ansible.builtin.copy: content='...' dest=/opt/app/version` |
+| Install or update Python deps | `ansible.builtin.pip` | `ansible.builtin.pip: requirements=/opt/app/requirements.txt virtualenv=/opt/app/venv` |
+| Add/remove a cron job | `ansible.builtin.cron` | `ansible.builtin.cron: name='rotate logs' minute=0 hour=3 job='/usr/bin/logrotate -f'` |
+| Create a local user | `ansible.builtin.user` | `ansible.builtin.user: name=app state=present shell=/bin/bash` |
+| Open a firewall port (firewalld) | `ansible.posix.firewalld` | `ansible.posix.firewalld: port=443/tcp permanent=yes state=enabled` |
+| Open a firewall port (UFW) | `community.general.ufw` | `community.general.ufw: rule=allow port=443 proto=tcp` |
+| Mount a filesystem | `ansible.posix.mount` | `ansible.posix.mount: path=/data src=/dev/sdb1 fstype=ext4 state=mounted` |
+| Download a file with checksum | `ansible.builtin.get_url` | `ansible.builtin.get_url: url=https://... dest=/tmp/... checksum=sha256:...` |
+| Call a REST API | `ansible.builtin.uri` | `ansible.builtin.uri: url=https://api/... method=GET return_content=yes` |
+| Manage a git repo on the target | `ansible.builtin.git` | `ansible.builtin.git: repo=... dest=/srv/app version=v1.2.3` |
+| Manage a Docker container | `community.docker.docker_container` | `community.docker.docker_container: name=app image=app:1.2.3 state=started` |
+| Apply a Kubernetes manifest | `kubernetes.core.k8s` | `kubernetes.core.k8s: state=present definition='{{ lookup("file","deploy.yml") \| from_yaml }}'` |
+| Configure a PostgreSQL user (secret-bearing) | `community.postgresql.postgresql_user` | `community.postgresql.postgresql_user: name=app password='{{ db_password }}'` — set `no_log: true` at task level (sibling of the module key, not inside its args) |
+| Create an S3 object | `amazon.aws.s3_object` | `amazon.aws.s3_object: bucket=my-bucket object=key src=/tmp/file mode=put` |
 
 ## Version Matrix
 

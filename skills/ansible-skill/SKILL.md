@@ -83,11 +83,9 @@ roles/       # local reusable roles
 collections/ # requirements.yml, installed collections
 playbooks/   # deploy.yml, site.yml, one-off ops plays
 molecule/    # per-role scenarios
-group_vars/  # cross-inventory group vars (if shared)
-host_vars/   # cross-inventory host vars (if shared)
 ```
 
-Separate **inventories** from **roles**. Keep roles single-responsibility. Prefer per-inventory `group_vars`/`host_vars` over top-level to avoid leak between environments.
+Separate **inventories** from **roles**. Keep roles single-responsibility. Keep all `group_vars/` and `host_vars/` **inside each `inventories/<env>/` directory** — never at repo root. Repo-root `group_vars/`/`host_vars/` apply to every environment's plays and leak prod values into dev runs.
 
 ### Naming Conventions
 

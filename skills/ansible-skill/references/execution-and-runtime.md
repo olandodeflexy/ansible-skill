@@ -33,7 +33,7 @@ Rules:
 - ❌ `max_fail_percentage` without `serial:` → percentage is evaluated against the *entire* play host group, not a batch.
 - ❌ `strategy: free` on a play where later tasks depend on all hosts having completed earlier tasks → ✅ Use `linear` (default) or add explicit barriers.
 - ❌ Omit `--limit` in CI on "production" jobs → ✅ Enforce `--limit` via a CI gate (see ci-cd-workflows.md).
-- ❌ Gather facts against the full fleet when the play touches 10 hosts → ✅ Run `ansible-playbook --limit=... --gather_facts=no` or scope with `hosts:` tightly.
+- ❌ Gather facts against the full fleet when the play touches 10 hosts → ✅ Set `gather_facts: false` at play level (there is no `--gather_facts` CLI flag), or scope with `hosts:` tightly, and pass `--limit` to narrow further.
 
 ## Execution Environments
 
@@ -74,10 +74,11 @@ Rules:
 | Target OS | Recommended `ansible_python_interpreter` | Discovery mode |
 |-----------|---------------------------------------------|----------------|
 | RHEL 9, Rocky 9, Alma 9 | `/usr/bin/python3` | Explicit (don't rely on auto) |
+| RHEL 8, Rocky 8, Alma 8 | `/usr/libexec/platform-python` (Red Hat-managed) or `/usr/bin/python3` | Explicit. `platform-python` was introduced in RHEL 8 |
 | Ubuntu 22.04+ | `/usr/bin/python3` | Explicit |
 | Debian 12+ | `/usr/bin/python3` | Explicit |
 | Amazon Linux 2023 | `/usr/bin/python3` | Explicit |
-| Older RHEL 7 / CentOS 7 | `/usr/libexec/platform-python` or installed Python 3 | Explicit |
+| Older RHEL 7 / CentOS 7 | Explicit absolute path to an installed Python 3 (e.g. `/usr/bin/python3`, `/opt/rh/rh-python38/root/usr/bin/python` from SCL, or whichever path was `yum install`ed). For very old ansible releases that still support Python 2, `/usr/bin/python` works, but ansible-core 2.12+ requires Python 3 on the target. **Not** `/usr/libexec/platform-python` — that path does not exist on RHEL 7 | Explicit |
 | Containers / minimal images | Depends on image | Explicit, always |
 
 Ansible has three auto-discovery modes (set via `INTERPRETER_PYTHON`):
