@@ -19,7 +19,7 @@ Diagnose-first guidance for Ansible and ansible-core. Core file is a workflow; d
 
 Every Ansible response must include:
 
-1. **Assumptions & version floor** — `ansible-core` version, collections in `requirements.yml` with versions, Python interpreter target (`ansible_python_interpreter`), connection plugin (ssh/winrm/local), control node vs execution-environment runtime. State explicitly when the user did not provide them.
+1. **Assumptions & version floor** — `ansible-core` version, collections in `requirements.yml` with versions, Python interpreter target (`ansible_python_interpreter`), connection plugin (ssh/winrm/local), control node vs execution-environment runtime. State explicitly when the user did not provide them. **When no version is given, assume the lowest currently-supported `ansible-core` minor from the [Version Matrix](references/quick-reference.md#version-matrix)** (e.g. `2.18+` rather than `2.14+`/`2.16+`); recommending an EOL floor produces guidance that's already past its support window.
 2. **Idempotency evidence** — for each task introduced or modified: why `changed=True` only when the world actually changed. Name the module's idempotency contract (native module idempotent; `command`/`shell` requires `creates`/`removes`/`changed_when`).
 3. **Blast-radius controls** — inventory target (hosts/groups/limit), `serial` / `max_fail_percentage` / `any_errors_fatal` decision, `--check` + `--diff` coverage, whether this is safe to run against prod as-is.
 4. **Risk category addressed** — one or more of the 9 diagnose-table categories below.
@@ -224,6 +224,16 @@ See [Security & Vault](references/security-and-vault.md) for vault-id patterns, 
 - Use fully-qualified collection names (`ansible.builtin.copy`, not `copy`) — ansible-lint `fqcn` rule enforces.
 - Pin all collections in `requirements.yml`; do not rely on the ansible community package version for prod.
 - Mirror critical collections internally (private Automation Hub or git) for supply-chain control.
+- Verify signatures on Automation Hub installs with the **canonical flags** (these are the ones that actually exist):
+
+  ```bash
+  ansible-galaxy collection verify <coll> \
+    --keyring /etc/pki/ansible/keys.gpg \
+    --required-valid-signature-count 1
+  ```
+
+  In `ansible.cfg`, the GPG keyring config key is `[galaxy] gpg_keyring`. Flags like `--signature-count-threshold` or config keys like `signing_keys` do not exist.
+- Run `ansible-galaxy collection install -r requirements.yml --collections-path ./collections` **and** `ansible-galaxy role install -r requirements.yml` separately — `collection install -r` ignores the `roles:` section.
 
 See [Collections & Supply Chain](references/collections-and-supply-chain.md) for `requirements.yml` syntax, signature verification, and private-hub auth.
 

@@ -22,13 +22,21 @@ Rules:
 
 ## ansible-lint
 
-| Rule category | Key rules | Fails if |
+| Rule category | Key rules | Fires on |
 |---------------|-----------|----------|
-| Structure | `fqcn`, `name[play]`, `name[casing]` | Using `copy:` instead of `ansible.builtin.copy`, missing play/task names |
-| Safety | `no-changed-when`, `risky-shell-pipe`, `no-free-form` | `command:` without `changed_when`, shell with `\|` without `pipefail` |
+| Structure | `fqcn`, `name[play]`, `name[casing]` | Any task using a short module name (`copy:` instead of `ansible.builtin.copy:`); missing play/task names |
+| Safety — `command`/`shell` | `no-changed-when`, `command-instead-of-shell`, `command-instead-of-module` | `command:` / `shell:` task without `changed_when:`; `shell:` used where `command:` would suffice; shelling out where a native module exists |
+| Safety — shell pipes only | `risky-shell-pipe` | **`shell:` tasks containing `\|` without `pipefail` set** — does NOT fire on `template:`, `copy:`, `uri:`, or any non-shell module |
+| Safety — module misuse | `no-free-form` | `module: foo=bar baz=qux` style instead of structured args |
 | Variables | `var-naming`, `jinja` | Role vars missing role-name prefix, malformed Jinja2 expressions |
 | YAML | `yaml[*]` | Indent, trailing spaces, document-start |
-| Secrets | `no-log-password`, `risky-file-permissions` | `password:` arg without `no_log: true`, 0777 chmods |
+| Secrets | `no-log-password`, `risky-file-permissions` | Module arg whose name matches a secret-like pattern (`*pass*`, `*token*`, `*key*`, `*secret*`) without `no_log: true`; `mode:` set to `0777` or other world-writable values |
+
+**Common LLM misattributions to avoid:**
+
+- `risky-shell-pipe` only fires on `ansible.builtin.shell:` tasks. It does **not** apply to `template:`, `copy:`, `uri:`, or any module that doesn't shell out. Cite it only when discussing actual shell-pipe constructs.
+- `no-log-password` matches by argument name, not module type. It catches `community.postgresql.postgresql_user: password=...` and `ansible.builtin.uri: body: { api_key: ... }` (the `api_key` field), but not arbitrary unnamed secret values.
+- `command-instead-of-shell` and `command-instead-of-module` are different rules — the first warns when `shell:` is used without shell features; the second warns when a native module would do the job.
 
 Minimal `.ansible-lint`:
 
