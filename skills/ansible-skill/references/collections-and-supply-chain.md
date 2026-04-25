@@ -115,6 +115,7 @@ token = <from keyring>
 ansible-galaxy collection verify redhat.rhel_system_roles \
   --server automation_hub \
   --keyring /etc/pki/ansible/automation-hub-signing.gpg \
+  --collections-path ./collections \
   --required-valid-signature-count +1
 ```
 
@@ -186,5 +187,5 @@ Rules:
 - ❌ Use short module names in generated tasks → ✅ Always FQCN.
 - ❌ Batch collection upgrades into one PR → ✅ One per PR for bisectability.
 - ❌ Store hub tokens / vault keys in committed `ansible.cfg` → ✅ Env vars, injected by the runner.
-- ❌ Skip signature verification when Automation Hub is available → ✅ Configure `[galaxy] gpg_keyring` in `ansible.cfg` (or pass `--keyring` per command) and run `ansible-galaxy collection verify --server automation_hub --keyring <path> --required-valid-signature-count +1` after install. The `+` prefix on the count is what makes verification strict — without it, an unsigned collection silently passes.
+- ❌ Skip signature verification when Automation Hub is available → ✅ Configure `[galaxy] gpg_keyring` in `ansible.cfg` (or pass `--keyring` per command) and run `ansible-galaxy collection verify -r requirements.yml --server automation_hub --keyring <path> --collections-path ./collections --required-valid-signature-count +1` after install. The `+` prefix on the count is what makes verification strict — without it, an unsigned collection silently passes. Either a positional FQCN or `-r requirements.yml` is required; `--collections-path` must match the install path.
 - ❌ Mix `collections:` and `roles:` entries without the top-level keys → ✅ Use the structured format even when you only have one type.
