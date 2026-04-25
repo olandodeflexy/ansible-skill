@@ -55,16 +55,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      # `molecule test -s <NAME>` selects a SCENARIO directory under molecule/<NAME>/.
+      # If you need per-distro coverage, create one scenario per distro
+      # (molecule/rockylinux9/, molecule/ubuntu2204/, …) and matrix over the
+      # scenario names — `-s` does not select a platform inside a scenario.
       matrix:
         role: [nginx-site, postgresql-replica]
-        platform: [rockylinux9, ubuntu2204]
+        scenario: [rockylinux9, ubuntu2204]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install ansible-core==2.18.0 molecule[docker]==24.7.0 ansible-lint==24.7.0
-      - run: molecule test -s ${{ matrix.platform }}
+      - run: molecule test -s ${{ matrix.scenario }}
         working-directory: roles/${{ matrix.role }}
 
   staging-check:
@@ -82,11 +86,13 @@ jobs:
       - run: echo "ANSIBLE_COLLECTIONS_PATHS=./collections" >> $GITHUB_ENV
       - name: Run --check --diff against staging
         shell: bash
-        env:
-          ANSIBLE_VAULT_PASSWORD_FILE: /tmp/vp
         run: |
-          set -eo pipefail   # `tee` would otherwise mask a non-zero ansible-playbook exit
-          echo "${{ secrets.VAULT_PASSWORD_STAGING }}" > /tmp/vp
+          set -eo pipefail            # `tee` would otherwise mask a non-zero ansible-playbook exit
+          umask 077                   # any tmpfiles below default to mode 0600
+          vp="$(mktemp)"
+          trap 'shred -u "$vp" 2>/dev/null || rm -f "$vp"' EXIT
+          printf '%s' "${{ secrets.VAULT_PASSWORD_STAGING }}" > "$vp"
+          export ANSIBLE_VAULT_PASSWORD_FILE="$vp"
           ansible-playbook -i inventories/staging playbooks/site.yml \
             --check --diff --limit staging \
             | tee staging-diff.txt
@@ -116,7 +122,10 @@ stages:
   - apply
 
 default:
-  image: quay.io/ansible/creator-ee:v24.7.0  # use the published image; replace with an internal mirror digest in regulated environments
+  # In production, pin by digest, not tag, for reproducibility/supply-chain safety:
+  #   image: quay.io/ansible/creator-ee@sha256:<approved-digest>
+  # The tag form below is only suitable for early-iteration / dev pipelines.
+  image: quay.io/ansible/creator-ee:v24.12.0
   cache:
     key: "$CI_COMMIT_REF_SLUG-venv"
     paths:
@@ -185,7 +194,9 @@ prod-check:
 
 apply-prod:
   stage: apply
-  needs: [prod-check]                                     # guaranteed to exist on main pipelines
+  needs:
+    - job: prod-check
+      artifacts: true                                     # pulls prod-diff.txt from the approved run
   environment:
     name: production
     action: start
@@ -194,10 +205,22 @@ apply-prod:
     - if: $CI_COMMIT_BRANCH == "main"
   script:
     - set -eo pipefail
-    - echo "$VAULT_PASSWORD_PROD" > /tmp/vp
-    - export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
+    - umask 077
+    - vp="$(mktemp)"; trap 'shred -u "$vp" 2>/dev/null || rm -f "$vp"' EXIT
+    - printf '%s' "$VAULT_PASSWORD_PROD" > "$vp"
+    - export ANSIBLE_VAULT_PASSWORD_FILE="$vp"
     - export ANSIBLE_COLLECTIONS_PATHS=./collections
     - ansible-galaxy collection install -r requirements.yml --collections-path ./collections
+    # Pre-apply drift check: re-run --check --diff against live state and abort
+    # if it diverges from the artifact a human approved at prod-check time.
+    - ansible-playbook -i inventories/prod playbooks/site.yml --check --diff --limit prod | tee prod-diff-now.txt
+    - |
+      if ! diff -q prod-diff.txt prod-diff-now.txt >/dev/null; then
+        echo "::error:: live diff diverges from approved prod-check artifact; aborting apply"
+        diff -u prod-diff.txt prod-diff-now.txt || true
+        exit 1
+      fi
+    # Approved diff still matches live state — apply.
     - ansible-playbook -i inventories/prod playbooks/site.yml --limit prod
 ```
 

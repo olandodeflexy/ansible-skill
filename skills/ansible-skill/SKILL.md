@@ -207,7 +207,7 @@ See [CI/CD Workflows](references/ci-cd-workflows.md) for GitHub Actions + GitLab
 - Use `ansible-vault encrypt_string` for inline single-value secrets
 - Use Vault-id strategy to support per-environment keys
 - Prefer external secret backends (HashiCorp Vault, AWS Secrets Manager, 1Password) via lookup plugins over static vault files
-- Set `no_log: true` on any task whose module args include secrets — and remember `register` + `loop` still leak unless you also strip in the loop item
+- Set `no_log: true` on any task whose module args include secrets, and avoid leak paths that bypass it: secrets in task names, `debug:` output of registered values, related tasks that omit `no_log`, and any `loop:` whose item itself is a secret (mark the looping task `no_log: true` too)
 
 See [Security & Vault](references/security-and-vault.md) for vault-id patterns, external-backend lookups, and secrets-in-logs hardening.
 
@@ -233,7 +233,7 @@ See [Collections & Supply Chain](references/collections-and-supply-chain.md) for
 |-----------|-----|-----|
 | Local dev, fast iteration | Bare `ansible-playbook` + venv | No image build overhead |
 | CI reproducibility | EE image with `ansible-navigator` | Pinned ansible-core + collections + deps |
-| Production run | EE image, pulled by digest | Deterministic runs, rollback by image tag |
+| Production run | EE image, pulled by digest | Deterministic runs, rollback by switching to a previously approved digest |
 
 **Rules:**
 

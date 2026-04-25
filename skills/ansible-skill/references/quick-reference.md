@@ -6,7 +6,7 @@ Cheatsheet and lookup tables for day-to-day Ansible work. Load this when the que
 
 | Goal | Command | Notes |
 |------|---------|-------|
-| Run a playbook | `ansible-playbook -i inventories/prod playbooks/site.yml` | Implicit `--check` is a common foot-gun — `--check` must be explicit |
+| Run a playbook | `ansible-playbook -i inventories/prod playbooks/site.yml` | Always mutating unless `--check` is passed explicitly. Don't assume dry-run mode |
 | Lint | `ansible-lint` | Reads `.ansible-lint` from project root |
 | Syntax check only | `ansible-playbook --syntax-check site.yml` | Parses YAML and validates module names; no execution |
 | Dry-run with diffs | `ansible-playbook site.yml --check --diff --limit prod` | Last gate before real apply |

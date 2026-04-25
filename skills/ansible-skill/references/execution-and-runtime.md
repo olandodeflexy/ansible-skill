@@ -48,14 +48,15 @@ Rules:
 Minimal `execution-environment.yml` (builder v3 schema):
 
 ```yaml
-# execution-environment.yml
+# execution-environment.yml — pick a non-EOL ansible-core minor; see references/quick-reference.md#version-matrix
 version: 3
 images:
   base_image:
-    name: quay.io/ansible/creator-ee:v24.7.0
+    # In production, replace with `quay.io/ansible/creator-ee@sha256:<approved-digest>`.
+    name: quay.io/ansible/creator-ee:v24.12.0
 dependencies:
   ansible_core:
-    package_pip: ansible-core==2.17.5
+    package_pip: ansible-core==2.18.0
   galaxy: requirements.yml
   python: requirements.txt
   system: bindep.txt
@@ -136,7 +137,6 @@ Rules:
 # ansible.cfg — typical production tuning
 [defaults]
 forks = 50
-gather_subset = !all,!min,network
 fact_caching = jsonfile
 fact_caching_connection = /var/tmp/ansible_facts
 fact_caching_timeout = 3600
@@ -145,6 +145,8 @@ fact_caching_timeout = 3600
 pipelining = True
 control_path = %(directory)s/%%h-%%r
 ```
+
+Note: `gather_subset` is **not** an `ansible.cfg` option. Set it on a play (`gather_subset: ['!all', '!min', 'network']`) or pass it as an argument to an explicit `ansible.builtin.setup` task. The closest `ansible.cfg` knob is `[defaults] gathering = smart|implicit|explicit`, which controls *whether* facts are gathered, not which subset.
 
 Rules:
 

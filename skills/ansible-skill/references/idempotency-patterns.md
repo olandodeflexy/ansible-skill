@@ -112,6 +112,6 @@ Rules:
 - ❌ Recommend `command: systemctl restart X` at the top of a play → ✅ `ansible.builtin.systemd` in a handler, notified by the config task.
 - ❌ Treat `uri` as always idempotent → ✅ `POST` is only idempotent if the server guarantees it; default to GET/PUT where possible.
 - ❌ Skip `changed_when` on an `ansible.builtin.command` "because it's informational" → ✅ Set `changed_when: false` explicitly.
-- ❌ Add `notify:` in another handler's block expecting chaining → ✅ Handlers cannot notify other handlers; use `listen:` topics.
+- ❌ Chain handlers via `notify:` from inside another handler → ✅ Modern ansible-core does allow handler-to-handler notify while the handler queue is running, but the resulting ordering and visibility are easy to get wrong; prefer flat `listen:` topics where many tasks fan into one logical action.
 - ❌ Assume `--check` caught a regression in a custom module → ✅ Check `supports_check_mode`; absent → the module is silently skipped under `--check`, not validated.
 - ❌ Use `ignore_errors: true` to "make the play pass in CI" → ✅ Fix the underlying failure or use `failed_when` to reinterpret rc, never mask real failures.

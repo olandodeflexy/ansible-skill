@@ -77,7 +77,7 @@ Rules:
 | 1Password | `community.general.onepassword` | `community.general` | `op signin` session token |
 | CyberArk Conjur | `cyberark.conjur.conjur_variable` | `cyberark.conjur` | Conjur host identity + api key |
 | Azure Key Vault | `azure.azcollection.azure_keyvault_secret` | `azure.azcollection` | Azure AD service principal |
-| GCP Secret Manager | `google.cloud.secret_manager` | `google.cloud` | Service account JSON / workload identity |
+| GCP Secret Manager | `google.cloud.gcp_secret_manager` | `google.cloud` | Service account JSON / workload identity |
 
 ```yaml
 # HashiCorp Vault (KV v2) — use the dedicated kv2 lookup so the return

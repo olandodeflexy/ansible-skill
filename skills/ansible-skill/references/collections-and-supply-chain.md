@@ -42,12 +42,17 @@ roles:
 | Git (branch) | `type: git`, `version: <branch>` | Dev only; never prod |
 | URL tarball | `name:` is a URL | Air-gapped mirrors, artifact servers |
 
-Install command:
+Install commands. The `collections:` and `roles:` sections are processed by **different installers** — `ansible-galaxy collection install -r` reads only `collections:` and silently skips `roles:` (and vice versa). Run both:
 
 ```bash
+# Collections — into a project-local path so CI sees them
 ansible-galaxy collection install -r requirements.yml \
   --collections-path ./collections \
   --force-with-deps
+
+# Roles — separate invocation; no `--collections-path` flag here
+ansible-galaxy role install -r requirements.yml \
+  --roles-path ./roles
 ```
 
 Rules:
