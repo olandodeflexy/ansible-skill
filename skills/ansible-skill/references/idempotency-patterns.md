@@ -53,7 +53,7 @@ Rules:
 - ❌ `ansible.builtin.shell: "psql -c 'CREATE USER x'"` (runs every time, fails on 2nd run) → ✅ `community.postgresql.postgresql_user: name=x state=present`.
 - ❌ `ansible.builtin.command: systemctl restart nginx` → ✅ `ansible.builtin.systemd: name=nginx state=restarted` (and only when a handler fires).
 - ❌ `ansible.builtin.shell` with pipes where `command` would work → ✅ Split into two tasks or use the correct module per step.
-- ❌ Omitting `changed_when` on any `command`/`shell` → ✅ Always set it, use `changed_when: false` for status probes.
+- ❌ Omitting `changed_when` on an **unguarded** `command`/`shell` → ✅ Set it explicitly. Use `changed_when: false` for read-only status probes; for one-shot commands already guarded by `creates:`/`removes:`, the guard makes the task idempotent on its own and `changed_when` is not required (and `changed_when: false` would actively hide the legitimate first-run change).
 
 ## Handler Patterns
 

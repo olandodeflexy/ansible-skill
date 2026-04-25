@@ -89,7 +89,7 @@ Separate **inventories** from **roles**. Keep roles single-responsibility. Keep 
 
 ### Naming Conventions
 
-- Role names: short, hyphenated, purpose-based (`nginx-site`, not `my_role`)
+- Role names: short, snake_case, purpose-based (`nginx_site`, not `my_role`). Hyphens fail the ansible-lint `role-name` rule (`^[a-z][a-z0-9_]*$`) and break collection packaging
 - Variable names: prefix with role scope to avoid global collisions (`nginx_site_port`, not `port`)
 - Task names: imperative sentence — appears in logs (`"Install nginx"`, not `"nginx"`)
 - Tags: purpose-based, not task-name-based (`tags: [config, tls]` vs `tags: [install_nginx]`)
@@ -255,13 +255,13 @@ See [Execution & Runtime](references/execution-and-runtime.md) for EE build patt
 
 Keep `ansible-core` + collection upgrades in a separate PR from functional changes. The community `ansible` package is a starter bundle; production teams pin collections individually.
 
-## Modern Ansible Features (2.11+)
+## Modern Ansible Features (2.4+)
 
 | Feature | Min `ansible-core` | Common use |
 |---------|---------------------|------------|
+| `validate:` parameter on `template`/`copy` | 2.0+ | Run shell validator before applying |
+| `import_role` / `include_role` with `vars_from` | 2.4+ | Load alt var files per import |
 | `argument_specs` in `meta/` | 2.11+ | Role input validation |
-| `ansible.builtin.import_role` with `vars_from` | 2.14+ | Load alt var files per import |
-| `validate` parameter on `template`/`copy` | 2.15+ | Run shell validator before applying |
 | Role handler `listen` topic inheritance | 2.16+ | Cross-role handler topics |
 | Structured `changed_when` with dict returns | 2.17+ | Clean branching on module result |
 | `ansible-navigator` stable workflow | n/a (packaging) | Default for EE-based runs |

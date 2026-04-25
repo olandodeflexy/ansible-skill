@@ -60,7 +60,7 @@ jobs:
       # (molecule/rockylinux9/, molecule/ubuntu2204/, …) and matrix over the
       # scenario names — `-s` does not select a platform inside a scenario.
       matrix:
-        role: [nginx-site, postgresql-replica]
+        role: [nginx_site, postgresql_replica]
         scenario: [rockylinux9, ubuntu2204]
     steps:
       - uses: actions/checkout@v4
@@ -147,7 +147,7 @@ molecule:
   # not a platform inside one scenario; matrix over scenario names.
   parallel:
     matrix:
-      - ROLE: [nginx-site, postgresql-replica]
+      - ROLE: [nginx_site, postgresql_replica]
         SCENARIO: [rockylinux9, ubuntu2204]
   variables:
     # docker:dind needs an explicit endpoint + TLS certs path; without these

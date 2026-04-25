@@ -87,7 +87,7 @@ Rules:
 | Pitfall | Symptom | Fix |
 |---------|---------|-----|
 | Unbounded re-query | Inventory plugin hits cloud API on every `ansible-playbook` run | `cache: true` + `cache_plugin: jsonfile` in plugin config |
-| Cache staleness | Host added to cloud not visible until cache expiry | Short `cache_timeout` or `ansible-inventory --refresh-cache` in CI |
+| Cache staleness | Host added to cloud not visible until cache expiry | Short `cache_timeout` or `ansible-inventory --flush-cache` in CI |
 | `ansible_host` vs `inventory_hostname` divergence | `inventory_hostname` is a tag, but ssh needs IP | Use `compose: { ansible_host: private_ip_address }` |
 | `--limit` against dynamic group | Group empty at play start → play silently runs against 0 hosts | `ansible-inventory --graph --limit=foo` to confirm non-empty |
 | Plugin auth ambient vs explicit | Works locally, fails in CI when IAM role absent | Assume an explicit IAM role in CI job; never rely on developer creds |
@@ -144,7 +144,7 @@ Rules:
 - ❌ Declare "`group_vars/all` always wins over `host_vars`" → ✅ `host_vars/<host>` (level 9) beats inventory `group_vars/all` (level 4) for that host.
 - ❌ Place `group_vars/` at the repo root for an inventory-per-env layout → ✅ Nest under each `inventories/<env>/` to prevent cross-env leakage.
 - ❌ Use `vars:` to capture a computed value → ✅ Use `register:` or `set_fact`.
-- ❌ Omit `cache: true` on a dynamic inventory plugin → ✅ Always cache; pair with `ansible-inventory --refresh-cache` in CI.
+- ❌ Omit `cache: true` on a dynamic inventory plugin → ✅ Always cache; pair with `ansible-inventory --flush-cache` in CI.
 - ❌ Trust `--limit` against a dynamic group without checking membership → ✅ `ansible-inventory --graph --limit=foo` before any run.
 - ❌ Call `inventory_hostname` the ssh target on a cloud inventory → ✅ Set `ansible_host` via `compose:` to the private/public IP.
 - ❌ Ship `--extra-vars` as a CI default without scoping → ✅ Use only when explicitly required; extra-vars beats every other precedence level.

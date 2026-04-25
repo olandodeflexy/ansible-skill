@@ -83,17 +83,25 @@ Rules:
 
 ```yaml
 # molecule/default/molecule.yml
+# `pre_build_image: true` tells Molecule the image is already Ansible-ready
+# (Python + sudo present). Vanilla `rockylinux:9` and `ubuntu:22.04` are NOT —
+# the first task fails on fact-gathering. Pick an Ansible-ready image (e.g.
+# geerlingguy/docker-*-ansible) or build your own and pin it by digest.
 dependency:
   name: galaxy
 driver:
   name: docker
 platforms:
   - name: rocky9
-    image: rockylinux:9
+    image: geerlingguy/docker-rockylinux9-ansible:latest
     pre_build_image: true
+    command: ""           # use the image's default; many ansible-ready images need no override
+    privileged: true       # required if the role manages systemd units
   - name: ubuntu2204
-    image: ubuntu:22.04
+    image: geerlingguy/docker-ubuntu2204-ansible:latest
     pre_build_image: true
+    command: ""
+    privileged: true
 provisioner:
   name: ansible
   config_options:
@@ -108,7 +116,7 @@ verifier:
 - name: Converge
   hosts: all
   roles:
-    - role: nginx-site
+    - role: nginx_site
 ```
 
 ```yaml
@@ -170,7 +178,7 @@ Rules:
 `meta/argument_specs.yml` validates role inputs at invocation time. Use `profile: production` in ansible-lint to enforce.
 
 ```yaml
-# roles/nginx-site/meta/argument_specs.yml
+# roles/nginx_site/meta/argument_specs.yml
 ---
 argument_specs:
   main:
