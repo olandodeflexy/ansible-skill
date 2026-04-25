@@ -111,11 +111,11 @@ token = <from keyring>
 ```
 
 ```bash
-# verify after install — fail unless at least 1 valid signature is present
+# verify after install — fail if zero signatures present OR if any valid signature is absent
 ansible-galaxy collection verify redhat.rhel_system_roles \
   --server automation_hub \
   --keyring /etc/pki/ansible/automation-hub-signing.gpg \
-  --required-valid-signature-count 1
+  --required-valid-signature-count +1
 ```
 
 Rules:
