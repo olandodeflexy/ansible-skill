@@ -22,13 +22,21 @@ Rules:
 
 ## ansible-lint
 
-| Rule category | Key rules | Fails if |
+| Rule category | Key rules | Fires on |
 |---------------|-----------|----------|
-| Structure | `fqcn`, `name[play]`, `name[casing]` | Using `copy:` instead of `ansible.builtin.copy`, missing play/task names |
-| Safety | `no-changed-when`, `risky-shell-pipe`, `no-free-form` | `command:` without `changed_when`, shell with `\|` without `pipefail` |
+| Structure | `fqcn`, `name[play]`, `name[casing]` | Any task using a short module name (`copy:` instead of `ansible.builtin.copy:`); missing play/task names |
+| Safety — `command`/`shell` | `no-changed-when`, `command-instead-of-shell`, `command-instead-of-module` | `command:` / `shell:` task without an idempotence guard (any of `changed_when:`, `creates:`, or `removes:`); `shell:` used where `command:` would suffice; shelling out where a native module exists |
+| Safety — shell pipes only | `risky-shell-pipe` | **`shell:` tasks containing `\|` without `pipefail` set** — does NOT fire on `template:`, `copy:`, `uri:`, or any non-shell module |
+| Safety — module misuse | `no-free-form` | `module: foo=bar baz=qux` style instead of structured args |
 | Variables | `var-naming`, `jinja` | Role vars missing role-name prefix, malformed Jinja2 expressions |
 | YAML | `yaml[*]` | Indent, trailing spaces, document-start |
-| Secrets | `no-log-password`, `risky-file-permissions` | `password:` arg without `no_log: true`, 0777 chmods |
+| Secrets | `no-log-password`, `risky-file-permissions` | Module arg whose name matches a **password-name pattern** (the rule is password-name-focused — it catches `password:`, `pass:`, etc., **not** generic `*token*`/`*key*`/`*secret*` patterns) without `no_log: true`; `mode:` set to `0777` or other world-writable values |
+
+**Common LLM misattributions to avoid:**
+
+- `risky-shell-pipe` only fires on `ansible.builtin.shell:` tasks. It does **not** apply to `template:`, `copy:`, `uri:`, or any module that doesn't shell out. Cite it only when discussing actual shell-pipe constructs.
+- `no-log-password` is **password-name-focused** — it matches argument names like `password:`, `pass:`, `passwd:` and does **not** flag `api_key:`, `token:`, `secret:`, or arbitrary other secret-bearing fields. Don't rely on it to catch API-token leaks; always set `no_log: true` explicitly on tasks whose args carry tokens, keys, or session secrets, regardless of field name.
+- `command-instead-of-shell` and `command-instead-of-module` are different rules — the first warns when `shell:` is used without shell features; the second warns when a native module would do the job.
 
 Minimal `.ansible-lint`:
 
