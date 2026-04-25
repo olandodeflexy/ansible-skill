@@ -8,7 +8,7 @@ description: "Use when writing, reviewing, or debugging Ansible playbooks, roles
 license: Apache-2.0
 metadata:
   author: sadicabubakari
-  version: 0.0.3
+  version: 0.1.0
 ---
 
 # Ansible Skill for Claude
