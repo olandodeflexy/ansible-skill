@@ -132,7 +132,7 @@ See [Idempotency Patterns](references/idempotency-patterns.md) for module idempo
 | Critical state-change on many hosts | Fail fast | `any_errors_fatal: true` |
 | Independent tasks, no cascade | Free strategy | `strategy: free` (hosts run independently) |
 
-**Never** run against production without an explicit `--limit` or a reviewed inventory pattern. **Never** set `any_errors_fatal: true` on rolling deploys where partial completion is worse than full failure.
+**Never** run against production without an explicit `--limit` or a reviewed inventory pattern. **Never** set `any_errors_fatal: true` on rolling deploys where partial completion is **safe** — it turns a contained mid-batch failure into a global abort. Use `any_errors_fatal: true` precisely when partial completion is worse than full failure (schema migrations, bootstrap, replicated state); otherwise pair `serial:` with `max_fail_percentage:` and let the rollout continue.
 
 See [Execution & Runtime](references/execution-and-runtime.md) for serial/max-fail combinations and [CI/CD Workflows](references/ci-cd-workflows.md) for CI-level blast-radius gates.
 

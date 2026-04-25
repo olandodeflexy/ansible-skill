@@ -46,7 +46,7 @@ jobs:
           python-version: "3.12"
       - run: pip install ansible-core==2.18.0 ansible-lint==24.7.0 yamllint==1.35.1
       - run: ansible-galaxy collection install -r requirements.yml --collections-path ./collections
-      - run: echo "ANSIBLE_COLLECTIONS_PATHS=./collections" >> $GITHUB_ENV
+      - run: echo "ANSIBLE_COLLECTIONS_PATH=./collections" >> $GITHUB_ENV
       - run: ansible-lint
       - run: yamllint .
 
@@ -83,7 +83,7 @@ jobs:
           python-version: "3.12"
       - run: pip install ansible-core==2.18.0
       - run: ansible-galaxy collection install -r requirements.yml --collections-path ./collections
-      - run: echo "ANSIBLE_COLLECTIONS_PATHS=./collections" >> $GITHUB_ENV
+      - run: echo "ANSIBLE_COLLECTIONS_PATH=./collections" >> $GITHUB_ENV
       - name: Run --check --diff against staging
         shell: bash
         run: |
@@ -143,16 +143,28 @@ lint:
 molecule:
   stage: test
   needs: [lint]
+  # `molecule test -s <NAME>` selects a SCENARIO directory (molecule/<NAME>/),
+  # not a platform inside one scenario; matrix over scenario names.
   parallel:
     matrix:
       - ROLE: [nginx-site, postgresql-replica]
-        PLATFORM: [rockylinux9, ubuntu2204]
-  script:
-    - cd roles/$ROLE
-    - molecule test -s $PLATFORM
+        SCENARIO: [rockylinux9, ubuntu2204]
+  variables:
+    # docker:dind needs an explicit endpoint + TLS certs path; without these
+    # Molecule defaults to /var/run/docker.sock and fails on shared runners.
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: "1"
+    DOCKER_CERT_PATH: "/certs/client"
   services:
     - name: docker:dind
       alias: docker
+  # The runner must be configured with `privileged = true` in config.toml for
+  # the docker:dind service to start. Document this requirement in your runner
+  # provisioning; many shared / managed GitLab runners disallow privileged.
+  script:
+    - cd roles/$ROLE
+    - molecule test -s $SCENARIO
 
 staging-check:
   stage: staging-check
@@ -164,9 +176,11 @@ staging-check:
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"   # MR gate before merge
   script:
     - set -eo pipefail
-    - echo "$VAULT_PASSWORD_STAGING" > /tmp/vp
-    - export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
-    - export ANSIBLE_COLLECTIONS_PATHS=./collections
+    - umask 077
+    - vp="$(mktemp)"; trap 'shred -u "$vp" 2>/dev/null || rm -f "$vp"' EXIT
+    - printf '%s' "$VAULT_PASSWORD_STAGING" > "$vp"
+    - export ANSIBLE_VAULT_PASSWORD_FILE="$vp"
+    - export ANSIBLE_COLLECTIONS_PATH=./collections
     - ansible-galaxy collection install -r requirements.yml --collections-path ./collections
     - ansible-playbook -i inventories/staging playbooks/site.yml --check --diff --limit staging | tee staging-diff.txt
   artifacts:
@@ -183,9 +197,11 @@ prod-check:
     - if: $CI_COMMIT_BRANCH == "main"                     # post-merge, pre-apply drift check
   script:
     - set -eo pipefail
-    - echo "$VAULT_PASSWORD_PROD" > /tmp/vp
-    - export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
-    - export ANSIBLE_COLLECTIONS_PATHS=./collections
+    - umask 077
+    - vp="$(mktemp)"; trap 'shred -u "$vp" 2>/dev/null || rm -f "$vp"' EXIT
+    - printf '%s' "$VAULT_PASSWORD_PROD" > "$vp"
+    - export ANSIBLE_VAULT_PASSWORD_FILE="$vp"
+    - export ANSIBLE_COLLECTIONS_PATH=./collections
     - ansible-galaxy collection install -r requirements.yml --collections-path ./collections
     - ansible-playbook -i inventories/prod playbooks/site.yml --check --diff --limit prod | tee prod-diff.txt
   artifacts:
@@ -209,7 +225,7 @@ apply-prod:
     - vp="$(mktemp)"; trap 'shred -u "$vp" 2>/dev/null || rm -f "$vp"' EXIT
     - printf '%s' "$VAULT_PASSWORD_PROD" > "$vp"
     - export ANSIBLE_VAULT_PASSWORD_FILE="$vp"
-    - export ANSIBLE_COLLECTIONS_PATHS=./collections
+    - export ANSIBLE_COLLECTIONS_PATH=./collections
     - ansible-galaxy collection install -r requirements.yml --collections-path ./collections
     # Pre-apply drift check: re-run --check --diff against live state and abort
     # if it diverges from the artifact a human approved at prod-check time.
