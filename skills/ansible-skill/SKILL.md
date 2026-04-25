@@ -228,12 +228,18 @@ See [Security & Vault](references/security-and-vault.md) for vault-id patterns, 
 
   ```bash
   ansible-galaxy collection verify <coll> \
+    --server automation_hub \
     --keyring /etc/pki/ansible/keys.gpg \
     --required-valid-signature-count 1
   ```
 
-  In `ansible.cfg`, the GPG keyring config key is `[galaxy] gpg_keyring`. Flags like `--signature-count-threshold` or config keys like `signing_keys` do not exist.
-- Run `ansible-galaxy collection install -r requirements.yml --collections-path ./collections` **and** `ansible-galaxy role install -r requirements.yml` separately — `collection install -r` ignores the `roles:` section.
+  Pass `--server automation_hub` (matching a `[galaxy_server.automation_hub]` block in `ansible.cfg`) so the verify lookup hits the same registry the collection was installed from. In `ansible.cfg`, the GPG keyring config key is `[galaxy] gpg_keyring`. Flags like `--signature-count-threshold` or config keys like `signing_keys` do not exist.
+- Run **both** install commands separately into project-local paths so CI and the documented layout stay in sync — `collection install -r` ignores the `roles:` section, and `role install` falls back to Ansible's user roles path unless `--roles-path` is set:
+
+  ```bash
+  ansible-galaxy collection install -r requirements.yml --collections-path ./collections
+  ansible-galaxy role install        -r requirements.yml --roles-path        ./roles
+  ```
 
 See [Collections & Supply Chain](references/collections-and-supply-chain.md) for `requirements.yml` syntax, signature verification, and private-hub auth.
 
