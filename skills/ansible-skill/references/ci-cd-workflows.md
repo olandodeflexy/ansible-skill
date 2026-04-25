@@ -44,9 +44,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ansible-core==2.17.5 ansible-lint==24.7.0 yamllint==1.35.1
+      - run: pip install ansible-core==2.18.0 ansible-lint==24.7.0 yamllint==1.35.1
       - run: ansible-galaxy collection install -r requirements.yml --collections-path ./collections
-      - run: echo "ANSIBLE_COLLECTIONS_PATH=./collections" >> $GITHUB_ENV
+      - run: echo "ANSIBLE_COLLECTIONS_PATHS=./collections" >> $GITHUB_ENV
       - run: ansible-lint
       - run: yamllint .
 
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ansible-core==2.17.5 molecule[docker]==24.7.0 ansible-lint==24.7.0
+      - run: pip install ansible-core==2.18.0 molecule[docker]==24.7.0 ansible-lint==24.7.0
       - run: molecule test -s ${{ matrix.platform }}
         working-directory: roles/${{ matrix.role }}
 
@@ -77,9 +77,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ansible-core==2.17.5
+      - run: pip install ansible-core==2.18.0
       - run: ansible-galaxy collection install -r requirements.yml --collections-path ./collections
-      - run: echo "ANSIBLE_COLLECTIONS_PATH=./collections" >> $GITHUB_ENV
+      - run: echo "ANSIBLE_COLLECTIONS_PATHS=./collections" >> $GITHUB_ENV
       - name: Run --check --diff against staging
         env:
           ANSIBLE_VAULT_PASSWORD_FILE: /tmp/vp
@@ -113,7 +113,7 @@ stages:
   - apply
 
 default:
-  image: registry.gitlab.com/ansible/creator-ee:v24.7.0
+  image: quay.io/ansible/creator-ee:v24.7.0  # use the published image; replace with an internal mirror digest in regulated environments
   cache:
     key: "$CI_COMMIT_REF_SLUG-venv"
     paths:
@@ -153,7 +153,7 @@ staging-check:
   script:
     - echo "$VAULT_PASSWORD_STAGING" > /tmp/vp
     - export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
-    - export ANSIBLE_COLLECTIONS_PATH=./collections
+    - export ANSIBLE_COLLECTIONS_PATHS=./collections
     - ansible-galaxy collection install -r requirements.yml --collections-path ./collections
     - ansible-playbook -i inventories/staging playbooks/site.yml --check --diff --limit staging | tee staging-diff.txt
   artifacts:
@@ -172,7 +172,7 @@ apply-prod:
   script:
     - echo "$VAULT_PASSWORD_PROD" > /tmp/vp
     - export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
-    - export ANSIBLE_COLLECTIONS_PATH=./collections
+    - export ANSIBLE_COLLECTIONS_PATHS=./collections
     - ansible-galaxy collection install -r requirements.yml --collections-path ./collections
     - ansible-playbook -i inventories/prod playbooks/site.yml --limit prod
 ```

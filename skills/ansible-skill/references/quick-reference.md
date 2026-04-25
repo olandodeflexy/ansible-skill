@@ -19,7 +19,7 @@ Cheatsheet and lookup tables for day-to-day Ansible work. Load this when the que
 | Edit vaulted file | `ansible-vault edit group_vars/prod/secrets.yml` | Decrypts to tmpfile, encrypts on save |
 | Rekey vault | `ansible-vault rekey --new-vault-id prod@new_file secrets.yml` | Rotate the encryption key |
 | Install collections | `ansible-galaxy collection install -r requirements.yml --collections-path ./collections` | Project-local install path |
-| Verify collection signatures | `ansible-galaxy collection verify mycoll --signature-count-threshold 1` | Against Automation Hub GPG keys |
+| Verify collection signatures | `ansible-galaxy collection verify mycoll --keyring /etc/pki/ansible/keys.gpg --required-valid-signature-count 1` | Fails install if fewer than 1 valid signature found |
 | Run via EE | `ansible-navigator run site.yml -i inventories/prod --mode stdout` | `--mode stdout` for CI (no TUI) |
 | Inspect inventory | `ansible-inventory -i inventories/prod --graph --limit web` | See what `--limit` will actually match |
 | List hosts that match | `ansible-playbook site.yml --list-hosts --limit web` | Confirm scope before running |

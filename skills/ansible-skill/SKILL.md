@@ -186,10 +186,10 @@ Pipeline stages: **lint → syntax-check → Molecule (or ansible-test) → stag
 
 **Rules:**
 
-- Pin `ansible-core` version in CI (`ansible-core>=2.17,<2.18`).
+- Pin `ansible-core` to a currently supported minor in CI (e.g. `ansible-core>=2.18,<2.19`); cross-check the [Version Matrix](references/quick-reference.md#version-matrix) before each release cycle and bump off any minor that is past EOL.
 - Pin collections in `requirements.yml` with exact versions for prod branches.
 - Inject vault password via OIDC or masked secret — never a file in the repo.
-- Apply the reviewed `--check` diff on approval; do not re-run planning logic inside the apply job.
+- Treat the reviewed `--check --diff` output as an approval artifact, not a replayable plan. The apply job must re-evaluate current state — optionally re-run `--check --diff` against live infrastructure and compare to the approved artifact before executing.
 
 See [CI/CD Workflows](references/ci-cd-workflows.md) for GitHub Actions + GitLab CI templates and blast-radius approval gates.
 

@@ -96,19 +96,21 @@ Rules:
 # ansible.cfg — require signature verification on install
 [galaxy]
 server_list = automation_hub, galaxy
+# point ansible-galaxy at the keyring holding accepted signing keys
+gpg_keyring = /etc/pki/ansible/automation-hub-signing.gpg
 
 [galaxy_server.automation_hub]
 url = https://console.redhat.com/api/automation-hub/content/published/
 auth_url = https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
 token = <from keyring>
-signing_keys = /etc/pki/ansible/automation-hub-signing.gpg
 ```
 
 ```bash
-# verify after install
+# verify after install — fail unless at least 1 valid signature is present
 ansible-galaxy collection verify redhat.rhel_system_roles \
   --server automation_hub \
-  --signature-count-threshold 1
+  --keyring /etc/pki/ansible/automation-hub-signing.gpg \
+  --required-valid-signature-count 1
 ```
 
 Rules:

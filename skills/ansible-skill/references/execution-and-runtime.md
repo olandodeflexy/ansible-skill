@@ -100,7 +100,7 @@ Rules:
 |-------------------|-----|---------|
 | `ssh` (default) | Standard Linux fleets | Requires `ControlPersist`; keys must be loaded in ssh-agent for CI |
 | `paramiko` | Pure-Python fallback when OS ssh is missing | Slower; lacks some features (e.g., `-o ProxyJump` nuance) |
-| `winrm` | Windows targets | Needs `pywinrm`; no HTTPS by default — add `ansible_winrm_transport: kerberos` or `ntlm` |
+| `winrm` | Windows targets | Needs `pywinrm`. Defaults to **HTTP on 5985** — for HTTPS set `ansible_winrm_scheme: https` and `ansible_port: 5986`, plus `ansible_winrm_server_cert_validation: validate` (or `ignore` for self-signed dev only). `ansible_winrm_transport` selects the **auth mechanism** (`kerberos`, `ntlm`, `basic`, `credssp`) and is independent of HTTP/HTTPS |
 | `local` | Control node targets itself | `become` still goes through sudo/doas |
 | `docker` | Against running Docker containers | Requires `docker` CLI on controller; not a prod path |
 | `kubectl` | Against Kubernetes pods | For ops tasks only; not how you deploy apps |
@@ -151,7 +151,7 @@ Rules:
 - ❌ Enable `pipelining` without checking sudoers for `requiretty` → ssh tasks silently fail on older RHEL-family hosts.
 - ❌ Crank `forks` to 200 on a controller with 2 GB RAM → OOM, half the hosts fail mid-play.
 - ❌ Use `strategy: free` with a play that has a `meta: flush_handlers` barrier → handlers fire per-host independently, breaks ordering guarantees.
-- ❌ Rely on stale fact cache during a debug session → ✅ Pass `-e ansible_facts_cache_valid=false` or `ansible-playbook --flush-cache`.
+- ❌ Rely on stale fact cache during a debug session → ✅ `ansible-playbook --flush-cache` invalidates the cache for this run, or delete the cache backend directly (e.g. `rm -rf $(ansible-config dump | grep CACHE_PLUGIN_CONNECTION | awk '{print $NF}')`); there is no `ansible_facts_cache_valid` variable.
 - ❌ Gather all facts when you only use `ansible_os_family` → ✅ Narrow `gather_subset` to `!all,!min,distribution`.
 
 ### LLM Mistake Checklist

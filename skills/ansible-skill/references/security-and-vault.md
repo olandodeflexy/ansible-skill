@@ -10,7 +10,7 @@ Detail for the `Secret exposure` routing-table category.
 | Per-environment keys | Vault-id with dev/stage/prod IDs | `--vault-id dev@prompt --vault-id prod@file` | Standard team setup |
 | No vault files on disk | Vault-id + system keyring | `--vault-id prod@keychain.sh` (custom script) | Laptops where keyring is trusted |
 | External KMS-backed | Vault-id + KMS lookup script | Script returns decrypted key from AWS KMS / Vault Transit / GCP KMS | Regulated environments |
-| Pre-decrypted secrets | External secret backend (HashiCorp Vault, AWS SM, 1Password) via lookup | `lookup('community.hashi_vault.vault_read', ...)` | Secrets managed outside Ansible entirely |
+| Pre-decrypted secrets | External secret backend (HashiCorp Vault, AWS SM, 1Password) via lookup | Backend-specific lookup, e.g. Vault KV v2: `lookup('community.hashi_vault.vault_kv2_get', ...)` | Secrets managed outside Ansible entirely |
 
 ```ini
 # ansible.cfg
@@ -72,7 +72,7 @@ Rules:
 
 | Backend | Lookup plugin | Collection | Auth |
 |---------|---------------|------------|------|
-| HashiCorp Vault (KV v2) | `community.hashi_vault.vault_read` | `community.hashi_vault` | `VAULT_ADDR`, `VAULT_TOKEN` / Kubernetes service account / AWS IAM |
+| HashiCorp Vault (KV v2) | `community.hashi_vault.vault_kv2_get` (preferred for KV v2) or `community.hashi_vault.vault_read` (lower-level, returns the raw API envelope) | `community.hashi_vault` | `VAULT_ADDR`, `VAULT_TOKEN` / Kubernetes service account / AWS IAM |
 | AWS Secrets Manager | `amazon.aws.secretsmanager_secret` | `amazon.aws` | IAM role on controller or EE |
 | 1Password | `community.general.onepassword` | `community.general` | `op signin` session token |
 | CyberArk Conjur | `cyberark.conjur.conjur_variable` | `cyberark.conjur` | Conjur host identity + api key |

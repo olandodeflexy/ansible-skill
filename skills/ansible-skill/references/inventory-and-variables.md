@@ -117,7 +117,15 @@ Rules:
   register: version_cmd
   changed_when: false
 
-- name: Store as fact for other plays
+# Cross-play in the SAME run: plain set_fact is enough — `cacheable` not needed.
+- name: Store for later plays in this run
+  ansible.builtin.set_fact:
+    app_version: "{{ version_cmd.stdout | trim }}"
+
+# Cross-RUN persistence: add `cacheable: true` AND configure a fact-caching plugin
+# in ansible.cfg (e.g. `fact_caching = jsonfile`); the value becomes a level-11
+# host fact in subsequent ansible-playbook runs.
+- name: Store for future runs (requires fact_caching configured)
   ansible.builtin.set_fact:
     app_version: "{{ version_cmd.stdout | trim }}"
     cacheable: true
