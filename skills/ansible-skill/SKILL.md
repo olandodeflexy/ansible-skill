@@ -247,7 +247,7 @@ See [Execution & Runtime](references/execution-and-runtime.md) for EE build patt
 
 | Component | Strategy | Example |
 |-----------|----------|---------|
-| `ansible-core` runtime | Pin minor for prod | `ansible-core>=2.17,<2.18` |
+| `ansible-core` runtime | Pin minor for prod; pick a non-EOL minor from the [Version Matrix](references/quick-reference.md#version-matrix) | `ansible-core>=2.18,<2.19` (re-evaluate at each release cycle) |
 | Community `ansible` package | Pin exact or avoid in prod | Prefer pinning `ansible-core` + collections separately |
 | Collections (prod) | Exact version in `requirements.yml` | `version: "5.1.2"` |
 | Collections (dev) | Allow minor | `version: ">=5.1.0,<6.0.0"` |

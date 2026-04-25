@@ -111,12 +111,12 @@ Become (privilege escalation):
 - `become: true` + `become_user: root` (default) → runs as root
 - `become_method: sudo` (default) | `su` | `doas` | `runas` (Windows) | `pbrun`
 - `become_flags: '-E'` → preserve environment (needed for some programs)
-- `become_password:` via Vault or prompt (`--ask-become-pass`, `-K`)
+- Become password — set on the host or group via `ansible_become_password` (alias `ansible_become_pass`), or prompt with `--ask-become-pass` / `-K`. There is **no** `become_password` task keyword or magic var; values stored under that name are silently ignored.
 
 Rules:
 
 - ❌ Set `become_user: postgres` without `become: true` → silent no-op, task runs as ssh user.
-- ❌ Store `become_password` in plaintext group_vars → ✅ Encrypt with `ansible-vault` or source from external secret backend.
+- ❌ Store `ansible_become_password` in plaintext group_vars → ✅ Encrypt with `ansible-vault` or source from an external secret backend (and pair with `no_log: true` on any task that exposes it).
 - ❌ Use `become_method: su` when sudo is available → `su` requires root's password, `sudo` uses the calling user's — prefer sudo.
 - ❌ Assume `become: true` preserves env vars → it doesn't by default; add `become_flags: '-E'` if the task needs them.
 - ❌ Set `ansible_user` per-host via host_vars without SSH key distribution → ✅ Pair user overrides with key-based auth configured in `~/.ssh/config` or `ansible_ssh_private_key_file`.

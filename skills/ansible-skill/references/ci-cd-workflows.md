@@ -81,9 +81,11 @@ jobs:
       - run: ansible-galaxy collection install -r requirements.yml --collections-path ./collections
       - run: echo "ANSIBLE_COLLECTIONS_PATHS=./collections" >> $GITHUB_ENV
       - name: Run --check --diff against staging
+        shell: bash
         env:
           ANSIBLE_VAULT_PASSWORD_FILE: /tmp/vp
         run: |
+          set -eo pipefail   # `tee` would otherwise mask a non-zero ansible-playbook exit
           echo "${{ secrets.VAULT_PASSWORD_STAGING }}" > /tmp/vp
           ansible-playbook -i inventories/staging playbooks/site.yml \
             --check --diff --limit staging \
@@ -109,7 +111,8 @@ Rules:
 stages:
   - lint
   - test
-  - staging-check
+  - staging-check    # runs on MR pipelines targeting main — gate before merge
+  - prod-check       # runs on main-branch pipelines after merge — pre-apply drift check
   - apply
 
 default:
@@ -149,8 +152,9 @@ staging-check:
     name: staging
     action: verify
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"   # MR gate before merge
   script:
+    - set -eo pipefail
     - echo "$VAULT_PASSWORD_STAGING" > /tmp/vp
     - export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
     - export ANSIBLE_COLLECTIONS_PATHS=./collections
@@ -160,16 +164,36 @@ staging-check:
     paths: [staging-diff.txt]
     expire_in: 30 days
 
+prod-check:
+  stage: prod-check
+  needs: [molecule]
+  environment:
+    name: production
+    action: verify
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"                     # post-merge, pre-apply drift check
+  script:
+    - set -eo pipefail
+    - echo "$VAULT_PASSWORD_PROD" > /tmp/vp
+    - export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
+    - export ANSIBLE_COLLECTIONS_PATHS=./collections
+    - ansible-galaxy collection install -r requirements.yml --collections-path ./collections
+    - ansible-playbook -i inventories/prod playbooks/site.yml --check --diff --limit prod | tee prod-diff.txt
+  artifacts:
+    paths: [prod-diff.txt]
+    expire_in: 30 days
+
 apply-prod:
   stage: apply
-  needs: [staging-check]
+  needs: [prod-check]                                     # guaranteed to exist on main pipelines
   environment:
     name: production
     action: start
-  when: manual
+  when: manual                                            # human approval gate after reviewing prod-diff.txt
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   script:
+    - set -eo pipefail
     - echo "$VAULT_PASSWORD_PROD" > /tmp/vp
     - export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/vp
     - export ANSIBLE_COLLECTIONS_PATHS=./collections
