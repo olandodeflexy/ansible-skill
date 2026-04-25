@@ -229,11 +229,11 @@ See [Security & Vault](references/security-and-vault.md) for vault-id patterns, 
   ```bash
   ansible-galaxy collection verify <coll> \
     --server automation_hub \
-    --keyring /etc/pki/ansible/keys.gpg \
-    --required-valid-signature-count 1
+    --keyring /etc/pki/ansible/automation-hub-signing.gpg \
+    --required-valid-signature-count +1
   ```
 
-  Pass `--server automation_hub` (matching a `[galaxy_server.automation_hub]` block in `ansible.cfg`) so the verify lookup hits the same registry the collection was installed from. In `ansible.cfg`, the GPG keyring config key is `[galaxy] gpg_keyring`. Flags like `--signature-count-threshold` or config keys like `signing_keys` do not exist.
+  The `+` prefix on `--required-valid-signature-count` is what makes verification *strict*: with `+1` (or `+all`), the absence of any signature is itself an error, so an unsigned or misconfigured collection fails CI. Without the `+`, a bare `1` only checks "≥1 valid signature *when signatures are present*" and silently passes a zero-signature response. Pass `--server automation_hub` (matching a `[galaxy_server.automation_hub]` block in `ansible.cfg`) so the verify lookup hits the same registry the collection was installed from. In `ansible.cfg`, the GPG keyring config key is `[galaxy] gpg_keyring`. Flags like `--signature-count-threshold` or config keys like `signing_keys` do not exist.
 - Run **both** install commands separately into project-local paths so CI and the documented layout stay in sync — `collection install -r` ignores the `roles:` section, and `role install` falls back to Ansible's user roles path unless `--roles-path` is set:
 
   ```bash

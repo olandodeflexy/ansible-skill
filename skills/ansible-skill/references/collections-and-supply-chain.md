@@ -186,5 +186,5 @@ Rules:
 - ❌ Use short module names in generated tasks → ✅ Always FQCN.
 - ❌ Batch collection upgrades into one PR → ✅ One per PR for bisectability.
 - ❌ Store hub tokens / vault keys in committed `ansible.cfg` → ✅ Env vars, injected by the runner.
-- ❌ Skip signature verification when Automation Hub is available → ✅ `signing_keys` + `verify` in install step.
+- ❌ Skip signature verification when Automation Hub is available → ✅ Configure `[galaxy] gpg_keyring` in `ansible.cfg` (or pass `--keyring` per command) and run `ansible-galaxy collection verify --server automation_hub --keyring <path> --required-valid-signature-count +1` after install. The `+` prefix on the count is what makes verification strict — without it, an unsigned collection silently passes.
 - ❌ Mix `collections:` and `roles:` entries without the top-level keys → ✅ Use the structured format even when you only have one type.
