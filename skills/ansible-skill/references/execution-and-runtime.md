@@ -52,11 +52,10 @@ Minimal `execution-environment.yml` (builder v3 schema):
 version: 3
 images:
   base_image:
-    # In production, replace with `quay.io/ansible/creator-ee@sha256:<approved-digest>`.
-    name: quay.io/ansible/creator-ee:v24.12.0
+    name: quay.io/ansible/creator-ee@sha256:<approved-digest>
 dependencies:
   ansible_core:
-    package_pip: ansible-core==2.18.0
+    package_pip: ansible-core>=2.20,<2.21
   galaxy: requirements.yml
   python: requirements.txt
   system: bindep.txt

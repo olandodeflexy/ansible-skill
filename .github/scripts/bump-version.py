@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
-"""Compute next semver given current version and commit messages since last tag."""
+"""Compute next semver and release notes from commits since the last tag."""
 import json
 import re
 import subprocess
 import sys
 from pathlib import Path
 
-import yaml
-
 ROOT = Path(__file__).resolve().parent.parent.parent
 MARKETPLACE = ROOT / ".claude-plugin" / "marketplace.json"
+CLAUDE_PLUGIN = ROOT / ".claude-plugin" / "plugin.json"
+CODEX_PLUGIN = ROOT / ".codex-plugin" / "plugin.json"
 SKILL = ROOT / "skills" / "ansible-skill" / "SKILL.md"
 CHANGELOG = ROOT / "CHANGELOG.md"
+RELEASE_VERSION = ROOT / ".release-version"
+RELEASE_NOTES = ROOT / ".release-notes.md"
+
+FEAT_RE = re.compile(r"^feat(?:\([^)]+\))?:")
+BREAKING_RE = re.compile(r"^BREAKING[ -]CHANGE:", re.MULTILINE)
 
 
 def current_version() -> tuple[int, int, int]:
@@ -27,22 +32,31 @@ def last_tag() -> str | None:
     return res.stdout.strip() or None if res.returncode == 0 else None
 
 
-def commits_since(tag: str | None) -> list[str]:
+def commits_since(tag: str | None) -> list[dict[str, str]]:
     range_arg = f"{tag}..HEAD" if tag else "HEAD"
     res = subprocess.run(
-        ["git", "log", range_arg, "--format=%s", "--no-merges"],
+        ["git", "log", range_arg, "--format=%H%x1f%s%x1f%B%x1e", "--no-merges"],
         capture_output=True, text=True, check=True,
     )
-    return [l for l in res.stdout.splitlines() if l.strip()]
+    commits: list[dict[str, str]] = []
+    for record in res.stdout.split("\x1e"):
+        record = record.strip()
+        if not record:
+            continue
+        sha, subject, body = record.split("\x1f", 2)
+        commits.append({"sha": sha, "subject": subject.strip(), "body": body.strip()})
+    return commits
 
 
-def classify(commits: list[str]) -> str:
+def classify(commits: list[dict[str, str]]) -> str:
     bump = "patch"
-    for msg in commits:
-        if "BREAKING CHANGE" in msg or re.match(r"^[a-z]+!:", msg):
+    for commit in commits:
+        subject = commit["subject"]
+        message = commit["body"]
+        if BREAKING_RE.search(message) or re.match(r"^[a-z]+(?:\([^)]+\))?!:", subject):
             return "major"
-        if msg.startswith("feat:") or msg.startswith("feat("):
-            bump = "minor" if bump != "major" else bump
+        if FEAT_RE.match(subject):
+            bump = "minor"
     return bump
 
 
@@ -61,15 +75,30 @@ def sync_versions(new: str) -> None:
     mp["plugins"][0]["version"] = new
     MARKETPLACE.write_text(json.dumps(mp, indent=2) + "\n")
 
+    for path in (CLAUDE_PLUGIN, CODEX_PLUGIN):
+        if path.exists():
+            data = json.loads(path.read_text())
+            data["version"] = new
+            path.write_text(json.dumps(data, indent=2) + "\n")
+
     content = SKILL.read_text()
-    parts = content.split("---", 2)
-    fm = yaml.safe_load(parts[1])
-    fm["metadata"]["version"] = new
-    new_fm = yaml.safe_dump(fm, sort_keys=False, default_flow_style=False)
-    SKILL.write_text(f"---\n{new_fm}---{parts[2]}")
+    updated = re.sub(r"^  version: .*$", f"  version: {new}", content, count=1, flags=re.M)
+    if updated == content:
+        raise RuntimeError("Could not find SKILL.md metadata.version to update")
+    SKILL.write_text(updated)
+
+
+def write_release_notes(new: str, commits: list[dict[str, str]]) -> None:
+    subjects = [commit["subject"] for commit in commits]
+    if not subjects:
+        subjects = ["Release maintenance updates."]
+
+    lines = [f"## v{new}", "", "Changes:"]
+    lines.extend(f"- {subject}" for subject in subjects)
+    RELEASE_NOTES.write_text("\n".join(lines) + "\n")
 
     existing = CHANGELOG.read_text()
-    entry = f"\n## v{new}\n\nSee commit log for details.\n"
+    entry = "\n".join(["", f"## v{new}", "", *[f"- {subject}" for subject in subjects], ""])
     CHANGELOG.write_text(existing.rstrip() + "\n" + entry)
 
 
@@ -85,7 +114,8 @@ def main() -> int:
     new_str = f"{new[0]}.{new[1]}.{new[2]}"
     print(f"Current: {'.'.join(str(x) for x in cur)} | Bump: {bump} | Next: {new_str}")
     sync_versions(new_str)
-    Path(".release-version").write_text(new_str)
+    write_release_notes(new_str, commits)
+    RELEASE_VERSION.write_text(new_str)
     return 0
 
 

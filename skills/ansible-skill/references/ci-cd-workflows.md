@@ -44,7 +44,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ansible-core==2.18.0 ansible-lint==24.7.0 yamllint==1.35.1
+      - run: pip install 'ansible-core>=2.20,<2.21' ansible-lint==24.7.0 yamllint==1.35.1
       - run: ansible-galaxy collection install -r requirements.yml --collections-path ./collections
       - run: echo "ANSIBLE_COLLECTIONS_PATH=./collections" >> $GITHUB_ENV
       - run: ansible-lint
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ansible-core==2.18.0 molecule[docker]==24.7.0 ansible-lint==24.7.0
+      - run: pip install 'ansible-core>=2.20,<2.21' molecule[docker]==24.7.0 ansible-lint==24.7.0
       - run: molecule test -s ${{ matrix.scenario }}
         working-directory: roles/${{ matrix.role }}
 
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ansible-core==2.18.0
+      - run: pip install 'ansible-core>=2.20,<2.21'
       - run: ansible-galaxy collection install -r requirements.yml --collections-path ./collections
       - run: echo "ANSIBLE_COLLECTIONS_PATH=./collections" >> $GITHUB_ENV
       - name: Run --check --diff against staging
@@ -122,10 +122,8 @@ stages:
   - apply
 
 default:
-  # In production, pin by digest, not tag, for reproducibility/supply-chain safety:
-  #   image: quay.io/ansible/creator-ee@sha256:<approved-digest>
-  # The tag form below is only suitable for early-iteration / dev pipelines.
-  image: quay.io/ansible/creator-ee:v24.12.0
+  # Pin by digest for reproducibility/supply-chain safety.
+  image: quay.io/ansible/creator-ee@sha256:<approved-digest>
   cache:
     key: "$CI_COMMIT_REF_SLUG-venv"
     paths:

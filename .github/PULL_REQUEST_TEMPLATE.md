@@ -18,9 +18,7 @@
 
 ## Validation
 
-- [ ] Local frontmatter check passes
-- [ ] Local line-count check passes
-- [ ] Local broken-link check passes
+- [ ] `python3 scripts/validate_skill.py` passes
 - [ ] Reloaded skill in Claude Code and confirmed at least one query routes correctly
 
 ## Notes for reviewer

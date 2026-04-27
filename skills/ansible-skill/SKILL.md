@@ -1,10 +1,6 @@
 ---
 name: ansible-skill
-description: "Use when writing, reviewing, or debugging Ansible playbooks, roles,\
-  \ collections, inventory, Vault, Molecule, execution environments, or CI \u2014\
-  \ diagnoses failure mode (idempotency drift, blast radius, secret exposure, variable\
-  \ precedence, inventory correctness, handler ordering, check-mode blind spots, collection\
-  \ supply chain, execution environment) with two-axis risk framing."
+description: "Use when writing, reviewing, or debugging Ansible playbooks, roles, collections, inventory, Vault, Molecule, execution environments, or CI; diagnoses failure modes with explicit idempotency, blast-radius, secret exposure, variable precedence, inventory correctness, handler ordering, check-mode, supply-chain, and runtime risk framing."
 license: Apache-2.0
 metadata:
   author: sadicabubakari
@@ -19,7 +15,7 @@ Diagnose-first guidance for Ansible and ansible-core. Core file is a workflow; d
 
 Every Ansible response must include:
 
-1. **Assumptions & version floor** — `ansible-core` version, collections in `requirements.yml` with versions, Python interpreter target (`ansible_python_interpreter`), connection plugin (ssh/winrm/local), control node vs execution-environment runtime. State explicitly when the user did not provide them. **When no version is given, assume the lowest currently-supported `ansible-core` minor from the [Version Matrix](references/quick-reference.md#version-matrix)** (e.g. `2.18+` rather than `2.14+`/`2.16+`); recommending an EOL floor produces guidance that's already past its support window.
+1. **Assumptions & version floor** — `ansible-core` version, collections in `requirements.yml` with versions, Python interpreter target (`ansible_python_interpreter`), connection plugin (ssh/winrm/local), control node vs execution-environment runtime. State explicitly when the user did not provide them. **When no version is given, assume the lowest supported `ansible-core` minor with EOL runway from the [Version Matrix](references/quick-reference.md#version-matrix)** (currently `2.19+`; `2.18` is security-only and near EOL). Recommending an EOL floor produces guidance that's already past its support window.
 2. **Idempotency evidence** — for each task introduced or modified: why `changed=True` only when the world actually changed. Name the module's idempotency contract (native module idempotent; `command`/`shell` requires `creates`/`removes`/`changed_when`).
 3. **Blast-radius controls** — inventory target (hosts/groups/limit), `serial` / `max_fail_percentage` / `any_errors_fatal` decision, `--check` + `--diff` coverage, whether this is safe to run against prod as-is.
 4. **Risk category addressed** — one or more of the 9 diagnose-table categories below.
@@ -186,7 +182,7 @@ Pipeline stages: **lint → syntax-check → Molecule (or ansible-test) → stag
 
 **Rules:**
 
-- Pin `ansible-core` to a currently supported minor in CI (e.g. `ansible-core>=2.18,<2.19`); cross-check the [Version Matrix](references/quick-reference.md#version-matrix) before each release cycle and bump off any minor that is past EOL.
+- Pin `ansible-core` to a currently supported minor in CI (e.g. `ansible-core>=2.20,<2.21`); cross-check the [Version Matrix](references/quick-reference.md#version-matrix) before each release cycle and bump off any minor that is past EOL or inside the final security-only window.
 - Pin collections in `requirements.yml` with exact versions for prod branches.
 - Inject vault password via OIDC or masked secret — never a file in the repo.
 - Treat the reviewed `--check --diff` output as an approval artifact, not a replayable plan. The apply job must re-evaluate current state — optionally re-run `--check --diff` against live infrastructure and compare to the approved artifact before executing.
@@ -266,7 +262,7 @@ See [Execution & Runtime](references/execution-and-runtime.md) for EE build patt
 
 | Component | Strategy | Example |
 |-----------|----------|---------|
-| `ansible-core` runtime | Pin minor for prod; pick a non-EOL minor from the [Version Matrix](references/quick-reference.md#version-matrix) | `ansible-core>=2.18,<2.19` (re-evaluate at each release cycle) |
+| `ansible-core` runtime | Pin minor for prod; pick a non-EOL minor from the [Version Matrix](references/quick-reference.md#version-matrix) | `ansible-core>=2.20,<2.21` (re-evaluate at each release cycle) |
 | Community `ansible` package | Pin exact or avoid in prod | Prefer pinning `ansible-core` + collections separately |
 | Collections (prod) | Exact version in `requirements.yml` | `version: "5.1.2"` |
 | Collections (dev) | Allow minor | `version: ">=5.1.0,<6.0.0"` |
@@ -299,9 +295,3 @@ Progressive disclosure — essentials here, depth on demand.
 - [CI/CD Workflows](references/ci-cd-workflows.md) — GitHub Actions, GitLab CI, blast-radius gates, secret handling in CI
 - [Collections & Supply Chain](references/collections-and-supply-chain.md) — `requirements.yml`, fqcn, signature verification, private hubs
 - [Quick Reference](references/quick-reference.md) — command cheatsheet, troubleshooting flowchart, module recipes, version matrix
-
-## License
-
-Apache-2.0. See LICENSE.
-
-Copyright © 2026 sadicabubakari.
