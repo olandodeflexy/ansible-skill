@@ -14,7 +14,10 @@ A **Claude Code skill** — executable documentation that Claude loads to provid
 
 ```
 ansible-skill/
+├── .codex-plugin/plugin.json        # Codex plugin metadata
 ├── .claude-plugin/marketplace.json  # Plugin metadata (version synced automatically)
+├── .claude-plugin/plugin.json       # Claude plugin metadata
+├── scripts/validate_skill.py        # Local/CI package validation
 ├── skills/
 │   └── ansible-skill/               # Skill autodiscovered by Claude Code plugin system
 │       ├── SKILL.md                 # Core skill file (<300 lines)
@@ -38,30 +41,10 @@ ansible-skill/
 
 ### Validation
 
-CI runs automatically on PRs touching `SKILL.md`, `references/**/*.md`, or `.claude-plugin/**`. To check locally:
+CI runs automatically on PRs and pushes to `master`. To check locally:
 
 ```bash
-# Check SKILL.md line count (target: <300 lines)
-wc -l skills/ansible-skill/SKILL.md
-
-# Validate YAML frontmatter (stdlib regex; no pyyaml required)
-python3 -c "
-import re
-content = open('skills/ansible-skill/SKILL.md').read()
-parts = content.split('---', 2)
-fm = parts[1]
-assert re.search(r'^name:\s+ansible-skill\s*$', fm, re.M), 'missing name'
-assert re.search(r'^description:\s+Use when', fm, re.M), 'description must start with Use when'
-assert re.search(r'^license:\s+Apache-2\.0\s*$', fm, re.M), 'missing license'
-assert re.search(r'^\s+version:', fm, re.M), 'missing metadata.version'
-print('Frontmatter OK')
-"
-
-# Check for broken internal links
-cd skills/ansible-skill
-grep -rhoE '\(references/[^)#]+\.md' SKILL.md references/*.md 2>/dev/null | \
-  sed 's/^(//' | sort -u | \
-  while read -r link; do [ ! -f "$link" ] && echo "Broken: $link"; done
+python3 scripts/validate_skill.py
 ```
 
 ### Testing Changes
@@ -78,17 +61,20 @@ Releases are **fully automated** from conventional commits on `master`:
 
 | Commit prefix | Version bump |
 |---------------|-------------|
-| `feat!:` or `BREAKING CHANGE:` | Major |
-| `feat:` | Minor |
+| `feat!:` / `feat(scope)!:` / `BREAKING CHANGE:` footer | Major |
+| `feat:` / `feat(scope):` | Minor |
 | `fix:` | Patch |
 | Other | Patch (default) |
 
 The release workflow automatically:
 - Bumps the version in `CHANGELOG.md`
-- Syncs versions across **three places** (must stay in sync):
+- Syncs versions across **five places** (must stay in sync):
   1. `.claude-plugin/marketplace.json` → `version` (root)
   2. `.claude-plugin/marketplace.json` → `plugins[0].version`
   3. `skills/ansible-skill/SKILL.md` YAML frontmatter → `metadata.version`
+  4. `.claude-plugin/plugin.json` → `version`
+  5. `.codex-plugin/plugin.json` → `version`
+- Creates a GitHub Release for the new tag using generated notes from commits since the previous tag
 
 **Never manually edit version numbers** — the CI handles this.
 
@@ -113,7 +99,7 @@ metadata:
 
 ### Progressive Disclosure Pattern
 
-SKILL.md is the entry point. Reference files load on demand. Cross-links use relative paths: `[Testing Guide](references/testing-frameworks.md)`.
+SKILL.md is the entry point. Reference files load on demand. Cross-links inside the skill use paths relative to the skill directory, such as `references/testing-frameworks.md`.
 
 When adding content, ask: **decision framework or key pattern → SKILL.md; detailed example or template → reference file.**
 

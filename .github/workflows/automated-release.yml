@@ -32,9 +32,9 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Show Python version
         if: steps.skip.outputs.skip != 'true'
-        run: pip install pyyaml
+        run: python3 --version
 
       - name: Configure git
         if: steps.skip.outputs.skip != 'true'
@@ -48,19 +48,33 @@ jobs:
         run: python3 .github/scripts/bump-version.py
 
       - name: Commit and tag
+        id: commit_tag
         if: steps.skip.outputs.skip != 'true'
         run: |
           VERSION=$(cat .release-version 2>/dev/null || true)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           if [ -z "$VERSION" ]; then
             echo "No version produced; nothing to release."
+            echo "released=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          rm .release-version
-          git add .claude-plugin/marketplace.json skills/ansible-skill/SKILL.md CHANGELOG.md
+          git add .claude-plugin/marketplace.json .claude-plugin/plugin.json .codex-plugin/plugin.json skills/ansible-skill/SKILL.md CHANGELOG.md
           if git diff --cached --quiet; then
             echo "No changes to commit."
+            echo "released=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git commit -m "chore(release): v$VERSION [skip ci]"
           git tag "v$VERSION"
           git push origin master --tags
+          echo "released=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        if: steps.commit_tag.outputs.released == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.commit_tag.outputs.version }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "v${{ steps.commit_tag.outputs.version }}" \
+            --notes-file .release-notes.md

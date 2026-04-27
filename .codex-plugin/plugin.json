@@ -1,0 +1,39 @@
+{
+  "name": "ansible-skill",
+  "version": "0.1.1",
+  "description": "Diagnose-first Ansible and ansible-core guidance for idempotency, blast-radius controls, runtime safety, and CI/CD review.",
+  "author": {
+    "name": "sadicabubakari"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "ansible",
+    "ansible-core",
+    "configuration-management",
+    "playbooks",
+    "roles",
+    "collections",
+    "molecule",
+    "vault",
+    "execution-environments",
+    "ci-cd"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Ansible Skill",
+    "shortDescription": "Ansible playbook, role, collection, and CI/CD guidance",
+    "longDescription": "Diagnose-first guidance for Ansible and ansible-core work. Reviews or generates playbooks, roles, collections, inventory, Vault usage, execution environments, testing, and CI/CD workflows with explicit idempotency evidence and blast-radius controls.",
+    "developerName": "sadicabubakari",
+    "category": "Development",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Review this Ansible playbook for idempotency and blast radius.",
+      "Write a safe Ansible role with Molecule validation.",
+      "Debug this Ansible execution environment or CI failure."
+    ],
+    "brandColor": "#EE0000"
+  }
+}

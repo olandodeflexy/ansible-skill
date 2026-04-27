@@ -1,0 +1,21 @@
+{
+  "name": "ansible-skill",
+  "version": "0.1.1",
+  "description": "Diagnose-first Ansible and ansible-core guidance for Claude Code.",
+  "author": {
+    "name": "sadicabubakari"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "ansible",
+    "ansible-core",
+    "configuration-management",
+    "playbooks",
+    "roles",
+    "collections",
+    "molecule",
+    "vault",
+    "execution-environments",
+    "ci-cd"
+  ]
+}

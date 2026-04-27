@@ -74,7 +74,7 @@ When a play fails, walk this tree top-down.
 | Goal | Preferred module | Minimal example |
 |------|------------------|-----------------|
 | Install package (any distro) | `ansible.builtin.package` | `ansible.builtin.package: name=nginx state=present` |
-| Start/enable a systemd unit | `ansible.builtin.systemd` | `ansible.builtin.systemd: name=nginx state=started enabled=true` |
+| Start/enable a systemd unit | `ansible.builtin.systemd_service` | `ansible.builtin.systemd_service: name=nginx state=started enabled=true` |
 | Copy a file (with backup) | `ansible.builtin.copy` | `ansible.builtin.copy: src=nginx.conf dest=/etc/nginx/nginx.conf backup=yes` |
 | Render a template | `ansible.builtin.template` | `ansible.builtin.template: src=app.conf.j2 dest=/etc/app.conf mode=0640` |
 | Create/write a small file | `ansible.builtin.file` + `ansible.builtin.copy` | `ansible.builtin.file: path=/opt/app state=directory mode=0755` then `ansible.builtin.copy: content='...' dest=/opt/app/version` |
@@ -94,13 +94,15 @@ When a play fails, walk this tree top-down.
 
 ## Version Matrix
 
-| `ansible-core` | Community `ansible` pkg | Release | EOL | EE image tag (OpenShift / creator-ee) |
-|-----------------|--------------------------|---------|-----|---------------------------------------|
-| 2.14 | 7.x | 2022-11 | 2024-05 (EOL) | `creator-ee:v0.21.0` |
-| 2.15 | 8.x | 2023-05 | 2024-11 (EOL) | `creator-ee:v0.22.0` |
-| 2.16 | 9.x | 2023-11 | 2025-05 | `creator-ee:v24.3.0` |
-| 2.17 | 10.x | 2024-05 | 2025-11 | `creator-ee:v24.7.0` |
-| 2.18 | 11.x | 2024-11 | 2026-05 | `creator-ee:v24.12.0` |
+| `ansible-core` | Community `ansible` pkg | Release | EOL | Guidance |
+|-----------------|--------------------------|---------|-----|----------|
+| 2.14 | 7.x | 2022-11 | 2024-05 (EOL) | Do not recommend |
+| 2.15 | 8.x | 2023-05 | 2024-11 (EOL) | Do not recommend |
+| 2.16 | 9.x | 2023-11 | 2025-07 (EOL) | Do not recommend |
+| 2.17 | 10.x | 2024-05 | 2025-11 (EOL) | Do not recommend |
+| 2.18 | 11.x | 2024-11 | 2026-05 | Security-only; avoid for new work |
+| 2.19 | 12.x | 2025-07 | 2026-11 | Minimum floor with EOL runway |
+| 2.20 | 13.x | 2025-11 | 2027-05 | Preferred current production floor |
 
 Rules:
 

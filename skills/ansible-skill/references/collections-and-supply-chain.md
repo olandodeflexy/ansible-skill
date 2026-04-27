@@ -70,7 +70,7 @@ Fully-qualified collection names prevent clashes when two collections ship modul
 |--------------|---------|
 | `copy:` | `ansible.builtin.copy:` |
 | `template:` | `ansible.builtin.template:` |
-| `service:` | `ansible.builtin.service:` (or `ansible.builtin.systemd:` for systemd-specific) |
+| `service:` | `ansible.builtin.service:` (or `ansible.builtin.systemd_service:` for systemd-specific) |
 | `ec2_instance:` | `amazon.aws.ec2_instance:` |
 | `postgresql_user:` | `community.postgresql.postgresql_user:` |
 | `docker_container:` | `community.docker.docker_container:` |

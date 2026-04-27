@@ -1,7 +1,10 @@
 .DS_Store
 node_modules/
+__pycache__/
 *.log
 .idea/
 .vscode/
 .env
 .env.local
+.release-version
+.release-notes.md

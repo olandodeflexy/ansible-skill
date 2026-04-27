@@ -13,7 +13,7 @@ Detail for the `Idempotency drift`, `Handler/ordering`, and `Check-mode blind sp
 | `ansible.builtin.blockinfile` | Yes | Markers delimit managed region | Changing `marker:` between runs produces two blocks |
 | `ansible.builtin.replace` | Yes | Regex substitution produced no change | Non-matching regex still reports `ok`, not failure — use `failed_when` |
 | `ansible.builtin.package` | Yes | Package manager reports already-installed | `state: latest` always re-resolves; heavier than `present` |
-| `ansible.builtin.service` / `systemd` | Yes | Running state + enabled state already match | `state: restarted` always reports `changed=True` |
+| `ansible.builtin.service` / `systemd_service` | Yes | Running state + enabled state already match | `state: restarted` always reports `changed=True` |
 | `ansible.builtin.cron` | Yes | Matches on `name:` in crontab comment | Changing only `minute:` without `name:` creates a duplicate |
 | `ansible.builtin.user` / `group` | Yes | Attribute diff against `/etc/passwd`/`/etc/group` | `password:` always re-hashes unless `update_password: on_create` |
 | `ansible.posix.mount` | Yes | fstab entry + mount state both match | `state: remounted` not idempotent; use `mounted`. Lives in the `ansible.posix` collection, not `ansible.builtin` |
@@ -51,7 +51,7 @@ Rules:
 - ❌ `ansible.builtin.shell: "curl -s https://api.example.com | jq .status"` → ✅ `ansible.builtin.uri: url=https://api.example.com return_content=yes` then `set_fact` from the JSON.
 - ❌ `ansible.builtin.command: rm -rf /tmp/build` (no guard) → ✅ `ansible.builtin.file: path=/tmp/build state=absent`.
 - ❌ `ansible.builtin.shell: "psql -c 'CREATE USER x'"` (runs every time, fails on 2nd run) → ✅ `community.postgresql.postgresql_user: name=x state=present`.
-- ❌ `ansible.builtin.command: systemctl restart nginx` → ✅ `ansible.builtin.systemd: name=nginx state=restarted` (and only when a handler fires).
+- ❌ `ansible.builtin.command: systemctl restart nginx` → ✅ `ansible.builtin.systemd_service: name=nginx state=restarted` (and only when a handler fires).
 - ❌ `ansible.builtin.shell` with pipes where `command` would work → ✅ Split into two tasks or use the correct module per step.
 - ❌ Omitting `changed_when` on an **unguarded** `command`/`shell` → ✅ Set it explicitly. Use `changed_when: false` for read-only status probes; for one-shot commands already guarded by `creates:`/`removes:`, the guard makes the task idempotent on its own and `changed_when` is not required (and `changed_when: false` would actively hide the legitimate first-run change).
 
@@ -93,7 +93,7 @@ Rules:
 |-----------------|------------------|------------|
 | File-manipulation (`copy`, `template`, `file`, `lineinfile`) | Yes | None |
 | Package (`package`, `dnf`, `apt`, `yum`) | Yes | None |
-| Service (`service`, `systemd`) | Yes | None — but `state: restarted` always reports would-change |
+| Service (`service`, `systemd_service`) | Yes | None — but `state: restarted` always reports would-change |
 | `command` / `shell` | **No by default** | For read-only probes: `check_mode: no` + `changed_when: false`. For mutating commands: gate with `when: not ansible_check_mode`. **Never** force `check_mode: yes` on a `command`/`shell` — it makes the task check-mode in *real* runs too, silently skipping execution and leaving `register` output undefined |
 | Custom modules | Depends on module | Support is implemented in the module code itself — pass `supports_check_mode=True` to `AnsibleModule(...)` in the module's Python source. (Role `meta/argument_specs.yml` is unrelated — that validates role inputs, not module check-mode behavior.) Otherwise the task is skipped silently under `--check` |
 | API / `uri` to external | Depends on endpoint | Wrap in `when: not ansible_check_mode` for mutating calls |
@@ -109,7 +109,7 @@ Rules:
 ### LLM Mistake Checklist
 
 - ❌ Emit `ansible.builtin.shell: "rm -rf {{ path }}"` with no guard → ✅ `ansible.builtin.file: path="{{ path }}" state=absent`.
-- ❌ Recommend `command: systemctl restart X` at the top of a play → ✅ `ansible.builtin.systemd` in a handler, notified by the config task.
+- ❌ Recommend `command: systemctl restart X` at the top of a play → ✅ `ansible.builtin.systemd_service` in a handler, notified by the config task.
 - ❌ Treat `uri` as always idempotent → ✅ `POST` is only idempotent if the server guarantees it; default to GET/PUT where possible.
 - ❌ Skip `changed_when` on an `ansible.builtin.command` "because it's informational" → ✅ Set `changed_when: false` explicitly.
 - ❌ Chain handlers via `notify:` from inside another handler → ✅ Modern ansible-core does allow handler-to-handler notify while the handler queue is running, but the resulting ordering and visibility are easy to get wrong; prefer flat `listen:` topics where many tasks fan into one logical action.

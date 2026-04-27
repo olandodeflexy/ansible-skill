@@ -14,7 +14,22 @@ Every Ansible response from Claude emits a two-axis Response Contract:
 6. **Validation plan** — exact `ansible-lint`, `--syntax-check`, `--check --diff`, Molecule, ansible-test commands
 7. **Rollback notes** — how to undo any destructive play
 
-## Install (Claude Code plugin marketplace)
+## Install
+
+### Codex
+
+```bash
+codex plugin marketplace add olandodeflexy/ansible-skill
+```
+
+For local development from a checkout:
+
+```bash
+mkdir -p ~/.codex/skills
+ln -s "$(pwd)/skills/ansible-skill" ~/.codex/skills/ansible-skill
+```
+
+### Claude Code
 
 ```bash
 # From Claude Code
@@ -40,7 +55,7 @@ Claude loads only the reference files relevant to your query.
 | Idempotency drift | `changed=True` loops, `command`/`shell` without guards, handler misfires |
 | Blast radius | `serial`, `max_fail_percentage`, `--limit` safety, fact-gathering scope |
 | Secret exposure | Vault, `no_log`, external secret backends, log leakage |
-| Variable precedence bugs | 23-level chain collisions |
+| Variable precedence bugs | 22-level chain collisions |
 | Inventory correctness | Static/dynamic drift, group membership |
 | Handler/ordering | `meta: flush_handlers`, `listen` topics |
 | Check-mode blind spots | `--check` compatibility, `ignore_errors` pitfalls |

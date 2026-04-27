@@ -2,82 +2,29 @@ name: Validate skill content
 
 on:
   pull_request:
-    paths:
-      - 'skills/ansible-skill/SKILL.md'
-      - 'skills/ansible-skill/references/**/*.md'
-      - '.claude-plugin/**'
+  push:
+    branches:
+      - master
 
 permissions:
   contents: read
 
 jobs:
-  frontmatter:
-    name: Validate YAML frontmatter
+  package:
+    name: Validate skill package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install pyyaml
-        run: pip install pyyaml
-      - name: Check frontmatter
+      - name: Validate JSON manifests
         run: |
-          python3 <<'PY'
-          import yaml, sys
-          content = open('skills/ansible-skill/SKILL.md').read()
-          parts = content.split('---', 2)
-          if len(parts) < 3:
-              sys.exit("SKILL.md missing YAML frontmatter delimiters")
-          fm = yaml.safe_load(parts[1])
-          required = {'name', 'description', 'license', 'metadata'}
-          missing = required - set(fm.keys())
-          if missing:
-              sys.exit(f"Missing fields: {missing}")
-          if not fm['description'].startswith('Use when'):
-              sys.exit("description must start with 'Use when'")
-          if len(fm['description']) >= 1024:
-              sys.exit(f"description too long: {len(fm['description'])}")
-          if 'version' not in fm.get('metadata', {}):
-              sys.exit("metadata.version missing")
-          print("Frontmatter OK")
-          PY
-
-  line-count:
-    name: Check SKILL.md line count
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Count lines
-        run: |
-          LINES=$(wc -l < skills/ansible-skill/SKILL.md)
-          echo "SKILL.md line count: $LINES"
-          if [ "$LINES" -gt 350 ]; then
-            echo "::error::SKILL.md exceeds 350-line hard limit ($LINES lines)"
-            exit 1
-          fi
-          if [ "$LINES" -gt 300 ]; then
-            echo "::warning::SKILL.md exceeds 300-line target ($LINES lines)"
-          fi
-
-  broken-links:
-    name: Check for broken internal links
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Scan for broken references/ links
-        shell: bash
-        run: |
-          cd skills/ansible-skill
-          BROKEN=0
-          LINKS=$(grep -rhoE '\(references/[^)#]+\.md' SKILL.md references/*.md 2>/dev/null | sed 's/^(//' | sort -u || true)
-          for link in $LINKS; do
-            if [ ! -f "$link" ]; then
-              echo "::error::Broken link target: $link"
-              BROKEN=1
-            fi
-          done
-          exit $BROKEN
+          python3 -m json.tool .claude-plugin/marketplace.json >/dev/null
+          python3 -m json.tool .claude-plugin/plugin.json >/dev/null
+          python3 -m json.tool .codex-plugin/plugin.json >/dev/null
+      - name: Validate skill package
+        run: python3 scripts/validate_skill.py
 
   markdown-lint:
     name: markdownlint
@@ -90,28 +37,3 @@ jobs:
           globs: |
             skills/ansible-skill/SKILL.md
             skills/ansible-skill/references/**/*.md
-
-  marketplace-json:
-    name: Validate marketplace.json
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install pyyaml
-        run: pip install pyyaml
-      - name: Parse JSON and check versions sync
-        run: |
-          python3 <<'PY'
-          import json, yaml, sys
-          mp = json.load(open('.claude-plugin/marketplace.json'))
-          skill = open('skills/ansible-skill/SKILL.md').read()
-          fm = yaml.safe_load(skill.split('---', 2)[1])
-          root_v = mp['version']
-          plugin_v = mp['plugins'][0]['version']
-          skill_v = fm['metadata']['version']
-          if not (root_v == plugin_v == skill_v):
-              sys.exit(f"version mismatch: root={root_v} plugin={plugin_v} skill={skill_v}")
-          print(f"All three version slots match: {root_v}")
-          PY
