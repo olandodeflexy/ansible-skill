@@ -21,3 +21,7 @@ See commit log for details.
 ## v0.1.1
 
 See commit log for details.
+
+## v0.1.2
+
+- fix: harden release automation and validation

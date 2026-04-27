@@ -1,6 +1,6 @@
 {
   "name": "ansible-skill",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Diagnose-first Ansible and ansible-core guidance for idempotency, blast-radius controls, runtime safety, and CI/CD review.",
   "author": {
     "name": "sadicabubakari"
