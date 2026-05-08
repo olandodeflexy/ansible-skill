@@ -45,3 +45,7 @@ See commit log for details.
 ## v0.1.7
 
 - docs: add Claude Code install instructions
+
+## v0.1.8
+
+- fix: stack install commands on site
