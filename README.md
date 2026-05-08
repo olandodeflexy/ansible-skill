@@ -42,9 +42,27 @@ From inside an active Claude Code session:
 /plugin install github:olandodeflexy/ansible-skill
 ```
 
-## Quick start
+## Use
 
-Ask Claude any of:
+### Codex
+
+Use the skill name in the prompt when you want Ansible-specific review, generation, or debugging:
+
+```text
+Use $ansible-skill to review this playbook for idempotency, blast radius, validation, and rollback.
+Use $ansible-skill to write a Molecule-tested role for nginx with safe production rollout controls.
+```
+
+### Claude Code
+
+Reference the installed skill directly in Claude Code, or ask an Ansible question after installing it:
+
+```text
+Use $ansible-skill to debug why this task reports changed=True on every run.
+Use $ansible-skill to design a CI pipeline with ansible-lint, Molecule, --check --diff, and a gated apply.
+```
+
+You can also ask:
 
 - "Write an idempotent playbook that installs nginx on a group of hosts"
 - "Review this playbook for blast-radius safety"
@@ -52,7 +70,7 @@ Ask Claude any of:
 - "Set up Molecule testing for this role"
 - "Pin our collections for production"
 
-Claude loads only the reference files relevant to your query.
+The agent loads only the reference files relevant to your query.
 
 ## Covered failure categories
 

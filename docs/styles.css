@@ -172,6 +172,10 @@ h2 {
   border-bottom: 1px solid var(--line);
 }
 
+.usage {
+  border-bottom: 1px solid var(--line);
+}
+
 .install-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -184,9 +188,31 @@ h2 {
   gap: 10px;
 }
 
-.install-card h3 {
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.usage-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 22px;
+  background: var(--panel);
+}
+
+.install-card h3,
+.usage-card h3 {
   margin-bottom: 0;
   font-size: 18px;
+}
+
+.usage-card p {
+  margin-bottom: 4px;
+  color: var(--muted);
 }
 
 .command-stack {
@@ -371,6 +397,7 @@ footer a {
 
   .split,
   .install-grid,
+  .usage-grid,
   .steps-grid,
   .footer-inner {
     grid-template-columns: 1fr;

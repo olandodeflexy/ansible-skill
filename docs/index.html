@@ -6,7 +6,7 @@
     <meta name="description" content="Ansible Skill is diagnose-first guidance for safe Ansible playbooks, roles, collections, Vault, execution environments, and CI/CD workflows.">
     <title>Ansible Skill</title>
     <link rel="icon" href="./assets/ansible-skill-mark.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./styles.css?v=20260508-install-stack">
+    <link rel="stylesheet" href="./styles.css?v=20260508-use-examples">
   </head>
   <body>
     <main>
@@ -26,6 +26,7 @@
           <div class="actions">
             <a class="button primary" href="https://github.com/olandodeflexy/ansible-skill">View on GitHub</a>
             <a class="button secondary" href="#install">Install</a>
+            <a class="button secondary" href="#use">Use it</a>
           </div>
         </div>
       </section>
@@ -57,6 +58,39 @@
             </article>
           </div>
           <p class="note">Already inside Claude Code? Use `/plugin install github:olandodeflexy/ansible-skill`.</p>
+        </div>
+      </section>
+
+      <section class="usage" id="use" aria-labelledby="use-title">
+        <div class="section-inner">
+          <p class="eyebrow">use it</p>
+          <h2 id="use-title">Call the skill by name, then ask for the Ansible outcome.</h2>
+          <div class="usage-grid">
+            <article class="usage-card">
+              <h3>Codex</h3>
+              <p>Use the skill name in the prompt when you want Ansible-specific review, generation, or debugging.</p>
+              <div class="terminal" data-copy-source data-command="Use $ansible-skill to review this playbook for idempotency, blast radius, validation, and rollback.">
+                <code>Use $ansible-skill to review this playbook for idempotency, blast radius, validation, and rollback.</code>
+                <button type="button" data-copy>Copy</button>
+              </div>
+              <div class="terminal" data-copy-source data-command="Use $ansible-skill to write a Molecule-tested role for nginx with safe production rollout controls.">
+                <code>Use $ansible-skill to write a Molecule-tested role for nginx with safe production rollout controls.</code>
+                <button type="button" data-copy>Copy</button>
+              </div>
+            </article>
+            <article class="usage-card">
+              <h3>Claude Code</h3>
+              <p>Reference the installed skill directly in Claude Code, or ask an Ansible question after installing it.</p>
+              <div class="terminal" data-copy-source data-command="Use $ansible-skill to debug why this task reports changed=True on every run.">
+                <code>Use $ansible-skill to debug why this task reports changed=True on every run.</code>
+                <button type="button" data-copy>Copy</button>
+              </div>
+              <div class="terminal" data-copy-source data-command="Use $ansible-skill to design a CI pipeline with ansible-lint, Molecule, --check --diff, and a gated apply.">
+                <code>Use $ansible-skill to design a CI pipeline with ansible-lint, Molecule, --check --diff, and a gated apply.</code>
+                <button type="button" data-copy>Copy</button>
+              </div>
+            </article>
+          </div>
         </div>
       </section>
 
