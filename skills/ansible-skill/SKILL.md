@@ -7,7 +7,7 @@ metadata:
   version: 0.1.10
 ---
 
-# Ansible Skill for Claude
+# Ansible Skill
 
 Diagnose-first guidance for Ansible and ansible-core. Core file is a workflow; depth lives in reference files loaded on demand.
 

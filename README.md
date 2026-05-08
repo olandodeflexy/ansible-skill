@@ -1,10 +1,10 @@
 # ansible-skill
 
-Diagnose-first Ansible guidance for Claude Code. Encodes ansible-core idempotency patterns, blast-radius controls, inventory/variable precedence rules, Vault handling, Molecule/ansible-test workflows, collection supply-chain hygiene, and execution-environment usage as a version-controlled skill.
+Diagnose-first Ansible guidance for Codex and Claude Code. Encodes ansible-core idempotency patterns, blast-radius controls, inventory/variable precedence rules, Vault handling, Molecule/ansible-test workflows, collection supply-chain hygiene, and execution-environment usage as a version-controlled skill.
 
 ## What it does
 
-Every Ansible response from Claude emits a two-axis Response Contract:
+Every Ansible response from Codex or Claude emits a two-axis Response Contract:
 
 1. **Assumptions & version floor** — ansible-core version, collections, Python interpreter, connection plugin
 2. **Idempotency evidence** — why each task reports `changed=True` only when the world changed
@@ -55,11 +55,11 @@ Use $ansible-skill to write a Molecule-tested role for nginx with safe productio
 
 ### Claude Code
 
-Reference the installed skill directly in Claude Code, or ask an Ansible question after installing it:
+Trigger the installed skill with the Claude Code slash command, then add the Ansible request:
 
 ```text
-Use $ansible-skill to debug why this task reports changed=True on every run.
-Use $ansible-skill to design a CI pipeline with ansible-lint, Molecule, --check --diff, and a gated apply.
+/ansible-skill debug why this task reports changed=True on every run.
+/ansible-skill design a CI pipeline with ansible-lint, Molecule, --check --diff, and a gated apply.
 ```
 
 You can also ask:
