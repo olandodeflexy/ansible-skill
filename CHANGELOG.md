@@ -25,3 +25,7 @@ See commit log for details.
 ## v0.1.2
 
 - fix: harden release automation and validation
+
+## v0.1.3
+
+- docs: add GitHub Pages landing site
