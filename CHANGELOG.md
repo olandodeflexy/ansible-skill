@@ -49,3 +49,7 @@ See commit log for details.
 ## v0.1.8
 
 - fix: stack install commands on site
+
+## v0.1.9
+
+- fix: prevent install command overflow

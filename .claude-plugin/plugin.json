@@ -1,6 +1,6 @@
 {
   "name": "ansible-skill",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Diagnose-first Ansible and ansible-core guidance for Claude Code.",
   "author": {
     "name": "sadicabubakari"
