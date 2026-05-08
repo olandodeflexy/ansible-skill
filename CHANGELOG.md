@@ -53,3 +53,7 @@ See commit log for details.
 ## v0.1.9
 
 - fix: prevent install command overflow
+
+## v0.1.10
+
+- docs: add skill usage examples
