@@ -33,3 +33,7 @@ See commit log for details.
 ## v0.1.4
 
 - fix: enable GitHub Pages deployment
+
+## v0.1.5
+
+- fix: use docs source for GitHub Pages
