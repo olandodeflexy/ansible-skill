@@ -32,7 +32,13 @@ ln -s "$(pwd)/skills/ansible-skill" ~/.codex/skills/ansible-skill
 ### Claude Code
 
 ```bash
-# From Claude Code
+claude plugin marketplace add olandodeflexy/ansible-skill
+claude plugin install ansible-skill@olandodeflexy
+```
+
+From inside an active Claude Code session:
+
+```text
 /plugin install github:olandodeflexy/ansible-skill
 ```
 

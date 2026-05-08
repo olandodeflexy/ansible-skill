@@ -34,11 +34,24 @@
         <div class="section-inner">
           <p class="eyebrow">install</p>
           <h2 id="install-title">Add it to Codex or Claude Code.</h2>
-          <div class="terminal" data-copy-source>
-            <code>codex plugin marketplace add olandodeflexy/ansible-skill</code>
-            <button type="button" data-copy>Copy</button>
+          <div class="install-grid">
+            <article class="install-card">
+              <h3>Codex</h3>
+              <div class="terminal" data-copy-source data-command="codex plugin marketplace add olandodeflexy/ansible-skill">
+                <code>codex plugin marketplace add olandodeflexy/ansible-skill</code>
+                <button type="button" data-copy>Copy</button>
+              </div>
+            </article>
+            <article class="install-card">
+              <h3>Claude Code</h3>
+              <div class="terminal" data-copy-source data-command="claude plugin marketplace add olandodeflexy/ansible-skill&#10;claude plugin install ansible-skill@olandodeflexy">
+                <code>claude plugin marketplace add olandodeflexy/ansible-skill
+claude plugin install ansible-skill@olandodeflexy</code>
+                <button type="button" data-copy>Copy</button>
+              </div>
+            </article>
           </div>
-          <p class="note">Also supports Claude Code plugin installation from the same GitHub repository.</p>
+          <p class="note">Already inside Claude Code? Use `/plugin install github:olandodeflexy/ansible-skill`.</p>
         </div>
       </section>
 
@@ -138,14 +151,15 @@
     </footer>
 
     <script>
-      const copyButton = document.querySelector("[data-copy]");
-      const command = document.querySelector("[data-copy-source] code");
-      copyButton?.addEventListener("click", async () => {
-        await navigator.clipboard.writeText(command.textContent.trim());
-        copyButton.textContent = "Copied";
-        setTimeout(() => {
-          copyButton.textContent = "Copy";
-        }, 1600);
+      document.querySelectorAll("[data-copy-source]").forEach((block) => {
+        const copyButton = block.querySelector("[data-copy]");
+        copyButton?.addEventListener("click", async () => {
+          await navigator.clipboard.writeText(block.dataset.command);
+          copyButton.textContent = "Copied";
+          setTimeout(() => {
+            copyButton.textContent = "Copy";
+          }, 1600);
+        });
       });
     </script>
   </body>
