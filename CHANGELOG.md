@@ -41,3 +41,7 @@ See commit log for details.
 ## v0.1.6
 
 - fix: avoid hard-coded site version
+
+## v0.1.7
+
+- docs: add Claude Code install instructions
