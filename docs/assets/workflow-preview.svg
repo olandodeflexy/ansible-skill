@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Ansible Skill workflow preview</title>
+  <desc id="desc">A product-style preview showing an Ansible review moving from diagnosis to risk controls and validation evidence.</desc>
+  <rect width="1200" height="720" rx="34" fill="#151515"/>
+  <rect x="34" y="34" width="1132" height="652" rx="24" fill="#F8F5EF"/>
+  <rect x="72" y="76" width="1056" height="72" rx="18" fill="#FFFFFF" stroke="#DDD6CA"/>
+  <circle cx="108" cy="112" r="10" fill="#EE0000"/>
+  <circle cx="140" cy="112" r="10" fill="#EAB308"/>
+  <circle cx="172" cy="112" r="10" fill="#16A34A"/>
+  <text x="212" y="119" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22" fill="#38332E">ansible-skill review playbooks/site.yml --risk prod</text>
+  <rect x="72" y="184" width="326" height="426" rx="22" fill="#FFFFFF" stroke="#DDD6CA"/>
+  <text x="106" y="232" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#151515">Diagnose</text>
+  <rect x="106" y="264" width="258" height="42" rx="12" fill="#FDECEC"/>
+  <text x="126" y="292" font-family="Inter, Arial, sans-serif" font-size="17" fill="#991B1B">idempotency drift</text>
+  <rect x="106" y="326" width="222" height="42" rx="12" fill="#FEF7DB"/>
+  <text x="126" y="354" font-family="Inter, Arial, sans-serif" font-size="17" fill="#854D0E">blast radius</text>
+  <rect x="106" y="388" width="238" height="42" rx="12" fill="#ECFDF5"/>
+  <text x="126" y="416" font-family="Inter, Arial, sans-serif" font-size="17" fill="#166534">vault exposure</text>
+  <path d="M106 474h238M106 520h186M106 566h214" stroke="#B8ADA0" stroke-width="16" stroke-linecap="round"/>
+  <rect x="438" y="184" width="326" height="426" rx="22" fill="#111111"/>
+  <text x="472" y="232" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">Constrain</text>
+  <path d="M478 290h220M478 338h184M478 386h242M478 434h150" stroke="#FFFFFF" stroke-width="15" stroke-linecap="round" opacity=".84"/>
+  <rect x="472" y="492" width="102" height="42" rx="12" fill="#EE0000"/>
+  <text x="496" y="520" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">serial</text>
+  <rect x="592" y="492" width="128" height="42" rx="12" fill="#2E2E2E" stroke="#555"/>
+  <text x="616" y="520" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">--limit</text>
+  <rect x="804" y="184" width="324" height="426" rx="22" fill="#FFFFFF" stroke="#DDD6CA"/>
+  <text x="838" y="232" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#151515">Validate</text>
+  <path d="m850 294 28 28 58-68" fill="none" stroke="#16A34A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="954" y="302" font-family="Inter, Arial, sans-serif" font-size="18" fill="#38332E">syntax-check</text>
+  <path d="m850 382 28 28 58-68" fill="none" stroke="#16A34A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="954" y="390" font-family="Inter, Arial, sans-serif" font-size="18" fill="#38332E">check + diff</text>
+  <path d="m850 470 28 28 58-68" fill="none" stroke="#16A34A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="954" y="478" font-family="Inter, Arial, sans-serif" font-size="18" fill="#38332E">rollback notes</text>
+</svg>

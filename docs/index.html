@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Ansible Skill is diagnose-first guidance for safe Ansible playbooks, roles, collections, Vault, execution environments, and CI/CD workflows.">
+    <title>Ansible Skill</title>
+    <link rel="icon" href="./assets/ansible-skill-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-inner">
+          <a class="wordmark" href="https://github.com/olandodeflexy/ansible-skill" aria-label="Ansible Skill on GitHub">
+            <img src="./assets/ansible-skill-mark.svg" alt="">
+            <span>ANSIBLE SKILL</span>
+          </a>
+          <h1 id="hero-title">Diagnose Ansible before it touches production.</h1>
+          <p class="lead">Review playbooks, roles, inventory, Vault, execution environments, and CI/CD workflows with explicit idempotency evidence, blast-radius controls, validation, and rollback notes.</p>
+          <ul class="pills" aria-label="Key properties">
+            <li>Local guidance</li>
+            <li>Risk framed</li>
+            <li>Release ready</li>
+          </ul>
+          <div class="actions">
+            <a class="button primary" href="https://github.com/olandodeflexy/ansible-skill">View on GitHub</a>
+            <a class="button secondary" href="#install">Install</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="install" id="install" aria-labelledby="install-title">
+        <div class="section-inner">
+          <p class="eyebrow">install</p>
+          <h2 id="install-title">Add it to Codex or Claude Code.</h2>
+          <div class="terminal" data-copy-source>
+            <code>codex plugin marketplace add olandodeflexy/ansible-skill</code>
+            <button type="button" data-copy>Copy</button>
+          </div>
+          <p class="note">Also supports Claude Code plugin installation from the same GitHub repository.</p>
+        </div>
+      </section>
+
+      <section class="preview" aria-labelledby="preview-title">
+        <div class="section-inner split">
+          <div>
+            <p class="eyebrow">workflow</p>
+            <h2 id="preview-title">Every answer leaves evidence.</h2>
+            <p>Ansible Skill routes each request through the failure mode first, then produces remediation with controls that operators can actually verify.</p>
+          </div>
+          <img class="workflow-image" src="./assets/workflow-preview.svg" alt="Ansible Skill workflow preview">
+        </div>
+      </section>
+
+      <section class="steps" aria-label="How it works">
+        <div class="section-inner steps-grid">
+          <article>
+            <span>01</span>
+            <h3>Diagnose</h3>
+            <p>Classify the risk: idempotency drift, inventory scope, secret exposure, precedence bugs, runtime mismatch, or CI blind spots.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Constrain</h3>
+            <p>Choose `serial`, `max_fail_percentage`, `--limit`, check-mode coverage, and handler behavior before recommending a run.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Validate</h3>
+            <p>Return concrete commands for lint, syntax-check, `--check --diff`, Molecule, ansible-test, and rollback verification.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="compare" aria-labelledby="compare-title">
+        <div class="section-inner">
+          <p class="eyebrow">comparison</p>
+          <h2 id="compare-title">Built for operational review, not generic YAML help.</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Capability</th>
+                  <th>Ansible Skill</th>
+                  <th>Generic prompt</th>
+                  <th>Lint only</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Risk routing</td>
+                  <td class="yes">9 categories</td>
+                  <td>Ad hoc</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>Blast-radius controls</td>
+                  <td class="yes">Required</td>
+                  <td>Inconsistent</td>
+                  <td>Partial</td>
+                </tr>
+                <tr>
+                  <td>Idempotency evidence</td>
+                  <td class="yes">Per task</td>
+                  <td>Usually missing</td>
+                  <td>Rule based</td>
+                </tr>
+                <tr>
+                  <td>Rollback notes</td>
+                  <td class="yes">Required</td>
+                  <td>Optional</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>Release packaging</td>
+                  <td class="yes">Codex + Claude</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <span>Works with Codex / Claude Code / ansible-lint / Molecule</span>
+        <nav>
+          <a href="https://github.com/olandodeflexy/ansible-skill">GitHub</a>
+          <a href="https://github.com/olandodeflexy/ansible-skill/releases">Releases</a>
+          <a href="#install">Install</a>
+        </nav>
+        <span>Apache-2.0 / v0.1.2</span>
+      </div>
+    </footer>
+
+    <script>
+      const copyButton = document.querySelector("[data-copy]");
+      const command = document.querySelector("[data-copy-source] code");
+      copyButton?.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(command.textContent.trim());
+        copyButton.textContent = "Copied";
+        setTimeout(() => {
+          copyButton.textContent = "Copy";
+        }, 1600);
+      });
+    </script>
+  </body>
+</html>
