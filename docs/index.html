@@ -6,7 +6,7 @@
     <meta name="description" content="Ansible Skill is diagnose-first guidance for safe Ansible playbooks, roles, collections, Vault, execution environments, and CI/CD workflows.">
     <title>Ansible Skill</title>
     <link rel="icon" href="./assets/ansible-skill-mark.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./styles.css?v=20260508-install-stack">
   </head>
   <body>
     <main>
@@ -44,10 +44,15 @@
             </article>
             <article class="install-card">
               <h3>Claude Code</h3>
-              <div class="terminal" data-copy-source data-command="claude plugin marketplace add olandodeflexy/ansible-skill&#10;claude plugin install ansible-skill@olandodeflexy">
-                <code>claude plugin marketplace add olandodeflexy/ansible-skill
-claude plugin install ansible-skill@olandodeflexy</code>
-                <button type="button" data-copy>Copy</button>
+              <div class="command-stack">
+                <div class="terminal" data-copy-source data-command="claude plugin marketplace add olandodeflexy/ansible-skill">
+                  <code>claude plugin marketplace add olandodeflexy/ansible-skill</code>
+                  <button type="button" data-copy>Copy</button>
+                </div>
+                <div class="terminal" data-copy-source data-command="claude plugin install ansible-skill@olandodeflexy">
+                  <code>claude plugin install ansible-skill@olandodeflexy</code>
+                  <button type="button" data-copy>Copy</button>
+                </div>
               </div>
             </article>
           </div>
