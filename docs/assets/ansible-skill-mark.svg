@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Ansible Skill mark</title>
+  <rect width="512" height="512" rx="112" fill="#111111"/>
+  <circle cx="256" cy="256" r="164" fill="#ffffff"/>
+  <path d="M256 118 378 382H326L301 323H205L180 382H128L256 118Zm0 94-36 80h68l-32-80Z" fill="#111111"/>
+  <path d="M292 292 256 212 220 292H292Z" fill="#EE0000"/>
+</svg>
