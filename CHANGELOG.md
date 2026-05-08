@@ -29,3 +29,7 @@ See commit log for details.
 ## v0.1.3
 
 - docs: add GitHub Pages landing site
+
+## v0.1.4
+
+- fix: enable GitHub Pages deployment
