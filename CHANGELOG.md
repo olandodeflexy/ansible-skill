@@ -37,3 +37,7 @@ See commit log for details.
 ## v0.1.5
 
 - fix: use docs source for GitHub Pages
+
+## v0.1.6
+
+- fix: avoid hard-coded site version
