@@ -57,3 +57,7 @@ See commit log for details.
 ## v0.1.10
 
 - docs: add skill usage examples
+
+## v0.1.11
+
+- docs: correct skill invocation syntax
